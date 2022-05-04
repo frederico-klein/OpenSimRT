@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.0)
 project(opensimrt VERSION 1.0.1)
 
 find_package(OpenSim)
+find_package(catkin REQUIRED COMPONENTS
+       opensimrt_msgs)
 
 # make this into a catkin package
 catkin_package(INCLUDE_DIRS 

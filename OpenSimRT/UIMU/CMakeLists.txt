@@ -10,6 +10,8 @@ file(
   applications/OnlineUpperLimbUIMUIK.cpp
   applications/OnlineUpperLimbUIMUIKar.cpp
   applications/nnn.cpp
+  applications/prod.cpp
+  applications/cons.cpp
 )
 # file(GLOB tests tests/*.cpp)
 
