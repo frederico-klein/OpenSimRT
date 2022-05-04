@@ -1,0 +1,15 @@
+/.dir-locals.el
+*~
+.cquery_cached_index/
+build/
+/OpenSimRT/Settings.h
+.clangd/
+/compile_commands.json
+*.log
+*__pycache__*
+install/
+*.swp
+*.pyc
+.vscode/
+/.cache/
+env.sh
