@@ -231,11 +231,13 @@ void run() {
         auto qRaw = qTable.getRowAtIndex(i).getAsVector();
         double t = qTable.getIndependentColumn()[i];
 
-	ROS_INFO_STREAM("TAN" << qRaw);
+	//ROS_INFO_STREAM("TAN" << qRaw);
 
         // increment the time by the total simulation time plus the sampling
         // period, to keep increasing after each simulation loop
+	ROS_INFO_STREAM("T:"t);
         t += loopCounter * (qTable.getIndependentColumn().back() + 0.01);
+	ROS_INFO_STREAM("T+:"t);
 
         // filter
         auto ikFiltered = filter.filter({t, qRaw});

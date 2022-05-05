@@ -227,11 +227,20 @@ void run() {
     int i = 0;
     // repeat the simulation `simulationLoops` times
     for (int k = 0; k < qTable.getNumRows() * simulationLoops; k++) {
-        // get raw pose from table
+        
+	// well yes, but actually no.
+	// get raw pose from table
+        auto qRaw_old = qTable.getRowAtIndex(i).getAsVector();
         auto qRaw = qTable.getRowAtIndex(i).getAsVector();
-        double t = qTable.getIndependentColumn()[i];
+        
+	//OpenSim::TimeSeriesTable 
 
-	ROS_INFO_STREAM("TAN" << qRaw);
+	//get_from_subscriber(qRaw,t); //this will set qRaw and t from the subscriber
+
+	double t_old = qTable.getIndependentColumn()[i];
+	double t = qTable.getIndependentColumn()[i];
+
+	//	ROS_INFO_STREAM("TAN" << qRaw);
 
         // increment the time by the total simulation time plus the sampling
         // period, to keep increasing after each simulation loop
