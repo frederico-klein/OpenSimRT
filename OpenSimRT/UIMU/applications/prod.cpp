@@ -235,9 +235,9 @@ void run() {
 
         // increment the time by the total simulation time plus the sampling
         // period, to keep increasing after each simulation loop
-	ROS_INFO_STREAM("T:"t);
+	ROS_INFO_STREAM("T:" << t);
         t += loopCounter * (qTable.getIndependentColumn().back() + 0.01);
-	ROS_INFO_STREAM("T+:"t);
+	ROS_INFO_STREAM("T+:" << t);
 
         // filter
         auto ikFiltered = filter.filter({t, qRaw});
