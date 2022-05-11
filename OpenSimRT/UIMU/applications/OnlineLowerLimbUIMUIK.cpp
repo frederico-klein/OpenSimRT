@@ -26,6 +26,7 @@
 #include "ros/ros.h"
 #include "opensimrt_msgs/Common.h"
 #include "opensimrt_msgs/Labels.h"
+#include "std_msgs/Header.h"
 
 #include "IMUCalibrator.h"
 #include "INIReader.h"
@@ -85,7 +86,10 @@ void run() {
     ros::NodeHandle n;
     UIMUInputDriver driver(8080, rate, true);
     driver.startListening();
-    ros::Publisher pub = n.advertise<opensimrt_msgs::Common>("producer",1000);
+    ros::Publisher re_pub = n.advertise<opensimrt_msgs::Common>("r_data", 1000);
+    ros::Publisher labels_pub = n.advertise<opensimrt_msgs::Labels>("r_labels", 1000, true); //latching topic
+    //TODO: publish labels
+    ROS_WARN_STREAM("not publishing labels!");
 
     // calibrator
     IMUCalibrator clb(model, &driver, imuObservationOrder);
@@ -110,7 +114,7 @@ void run() {
     cout << "Showing successful." << endl;
     cout << "zero vector: " << zv << endl;
 
-    bool VISUALIZATION = true;
+    bool VISUALIZATION = false;
 
     // mean delay
     int sumDelayMS = 0;
@@ -119,9 +123,9 @@ void run() {
     try { // main loop
         while (!(driver.shouldTerminate())) {
             // get input from sensors
-	    std::cout << "Getting frame:" << std::endl;
+	    ROS_DEBUG_STREAM("Getting frame:");
 	    auto imuData = driver.getFrame();
-	    std::cout << "Solving inverse kinematics:" << std::endl;
+	    ROS_DEBUG_STREAM("Solving inverse kinematics:" );
             numFrames++;
 
             if (driver.shouldTerminate())
@@ -139,8 +143,25 @@ void run() {
             sumDelayMS += chrono::duration_cast<chrono::milliseconds>(t2 - t1)
                                   .count();
 
-            // visualize
-	    std::cout << "pose is:" << pose.q;
+          
+	    ROS_DEBUG_STREAM( "pose is:" << pose.q);
+	    
+	    opensimrt_msgs::Common msg;
+	    std_msgs::Header h;
+	    h.stamp = ros::Time::now();
+	    h.frame_id = "subject";
+	    msg.header = h;
+	    //msg.data.push_back(pose.t);
+
+	    for (double joint_angle:pose.q)
+	    {
+		ROS_DEBUG_STREAM("some joint_angle:"<<joint_angle);
+		msg.data.push_back(joint_angle);
+	    }
+
+	    re_pub.publish(msg);
+
+	    //Visualization
             if(VISUALIZATION)
 	    {
 		    visualizer.update(pose.q);
