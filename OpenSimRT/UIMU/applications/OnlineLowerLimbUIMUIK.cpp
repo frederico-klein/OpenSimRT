@@ -23,6 +23,10 @@
  *
  * @author Filip Konstantinos <filip.k@ece.upatras.gr>
  */
+#include "ros/ros.h"
+#include "opensimrt_msgs/Common.h"
+#include "opensimrt_msgs/Labels.h"
+
 #include "IMUCalibrator.h"
 #include "INIReader.h"
 #include "InverseKinematics.h"
@@ -77,8 +81,11 @@ void run() {
 
     // ngimu input data driver from file
     //UIMUInputDriver driver(ngimuDataFile, rate);
+    //this is now a ROS thing, so we need to set it up as a ros node 
+    ros::NodeHandle n;
     UIMUInputDriver driver(8080, rate);
     driver.startListening();
+    ros::Publisher pub = n.advertise<opensimrt_msgs::Common>("producer",1000);
 
     // calibrator
     IMUCalibrator clb(model, &driver, imuObservationOrder);
@@ -156,8 +163,9 @@ void run() {
     //         qLogger, subjectDir + "real_time/inverse_kinematics/q_imu.sto");
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char** argv) {
     try {
+	ros::init(argc, argv, "online_lower_limb_uimu_ik");
         run();
     } catch (exception& e) {
         cout << "Program crashed while running. Reason: " << e.what() << endl;
