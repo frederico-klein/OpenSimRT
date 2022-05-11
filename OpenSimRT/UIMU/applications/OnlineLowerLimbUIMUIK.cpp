@@ -24,7 +24,7 @@
  * @author Filip Konstantinos <filip.k@ece.upatras.gr>
  */
 #include "ros/ros.h"
-#include "opensimrt_msgs/Common.h"
+#include "opensimrt_msgs/CommonTimed.h"
 #include "opensimrt_msgs/Labels.h"
 #include "std_msgs/Header.h"
 
@@ -86,7 +86,7 @@ void run() {
     ros::NodeHandle n;
     UIMUInputDriver driver(8080, rate, true);
     driver.startListening();
-    ros::Publisher re_pub = n.advertise<opensimrt_msgs::Common>("r_data", 1000);
+    ros::Publisher re_pub = n.advertise<opensimrt_msgs::CommonTimed>("r_data", 1000);
     ros::Publisher labels_pub = n.advertise<opensimrt_msgs::Labels>("r_labels", 1000, true); //latching topic
     //TODO: publish labels
     ROS_WARN_STREAM("not publishing labels!");
@@ -103,23 +103,28 @@ void run() {
     auto qLogger = ik.initializeLogger();
 
     // visualizer
-    BasicModelVisualizer visualizer(model);
+    /*bool VISUALIZATION = false;
+    if (VISUALIZATION)
+    {
+	    BasicModelVisualizer visualizer(model);
+    
+	    SimTK::Vector zv; //zero vector
+	    std::istringstream is("0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 ");
+	    is >> zv;
 
-    SimTK::Vector zv; //zero vector
-    std::istringstream is("0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 ");
-    is >> zv;
-
-    cout << "Attempt at showing." << endl;
-    visualizer.update(zv);
-    cout << "Showing successful." << endl;
-    cout << "zero vector: " << zv << endl;
-
-    bool VISUALIZATION = false;
-
+	    cout << "Attempt at showing." << endl;
+	    visualizer.update(zv);
+	    cout << "Showing successful." << endl;
+	    cout << "zero vector: " << zv << endl;
+    }
+	*/
     // mean delay
     int sumDelayMS = 0;
     int numFrames = 0;
 
+    double previousTime = 0;
+    double previousDt = 0;
+    
     try { // main loop
         while (!(driver.shouldTerminate())) {
             // get input from sensors
@@ -146,13 +151,20 @@ void run() {
           
 	    ROS_DEBUG_STREAM( "pose is:" << pose.q);
 	    
-	    opensimrt_msgs::Common msg;
+	    opensimrt_msgs::CommonTimed msg;
 	    std_msgs::Header h;
 	    h.stamp = ros::Time::now();
 	    h.frame_id = "subject";
 	    msg.header = h;
 	    //msg.data.push_back(pose.t);
-
+	    msg.time = pose.t;
+	    double Dt = msg.time-previousTime;
+    	    double jitter = Dt-previousDt;
+	    
+	    ROS_DEBUG_STREAM("jitter(us):" << jitter*1000000);
+	    ROS_DEBUG_STREAM("delta_t   :" << Dt);
+	    ROS_DEBUG_STREAM("T (pose.t):" << msg.time);
+		
 	    for (double joint_angle:pose.q)
 	    {
 		ROS_DEBUG_STREAM("some joint_angle:"<<joint_angle);
@@ -162,13 +174,15 @@ void run() {
 	    re_pub.publish(msg);
 
 	    //Visualization
-            if(VISUALIZATION)
+            /*if(VISUALIZATION)
 	    {
 		    visualizer.update(pose.q);
 	    	    std::cout << "Visualization successful." << std::endl;
-	    }
+	    }*/
             // record
             qLogger.appendRow(pose.t, ~pose.q);
+	    previousTime = pose.t;
+	    previousDt = Dt;
         }
     } catch (std::exception& e) {
         cout << "Crashed while executing main loop. " << e.what() << endl;
