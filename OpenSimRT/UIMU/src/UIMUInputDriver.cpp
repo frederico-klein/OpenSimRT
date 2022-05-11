@@ -21,6 +21,7 @@
 #include "Exception.h"
 #include <iostream>
 #include <vector>
+#include "ros/ros.h"
 
 using namespace OpenSimRT;
 using namespace SimTK;
@@ -29,12 +30,13 @@ UIMUInputDriver::UIMUInputDriver(const int port,
                                                    const double& sendRate, bool simple)
         :server(port, 4096, simple), rate(sendRate), terminationFlag(false) {
         imu_names = {"torax", "humerus", "radius" };
-
+	ROS_WARN("IMU names are hardcoded!!! This needs to be solved or saving the TimeSeriesTable as CSV will be wrong!");
         }
 UIMUInputDriver::UIMUInputDriver(const int port,
                                                    const double& sendRate)
         :server(port, 4096, true), rate(sendRate), terminationFlag(false) {
         imu_names = {"torax", "humerus", "radius" };
+	ROS_WARN("IMU names are hardcoded!!! This needs to be solved or saving the TimeSeriesTable as CSV will be wrong!");
 
         }
 
@@ -54,23 +56,23 @@ void UIMUInputDriver::startListening() {
                     std::lock_guard<std::mutex> lock(mu);
                     // get something from the udp stream
                     //TODO: rosdebug
-		    //std::cout << "Acquired lock. receiving." << std::endl;
+		    ROS_DEBUG_STREAM( "Acquired lock. receiving.");
                     if (! server.receive()){
-                            std::cout << "Received goodbye message!" << std::endl;
+                            ROS_INFO_STREAM( "Received goodbye message!" );
                             terminationFlag = true;
                             break;
                     }
                     std::vector<double> output = server.output;
-                    //std::cout << "Received." << std::endl;
+                    ROS_DEBUG_STREAM("Received.");
 
                     // there is no table, so this will be empty
                     //std::stringstream s(server.buffer);
                     //time = output[0]; // probably a double
                     //SimTK::readUnformatted<SimTK::Vector>(s, frame);// I will keep
 
-		    //std::cout << output.size() << std::endl;
+		    ROS_DEBUG_STREAM("read input size from SimpleServer" << output.size());
                     table.appendRow(output[0], output.begin()+1, output.end()); // superflex!
-		    //std::cout << "added to table alright." << std::endl;
+		    ROS_DEBUG_STREAM( "added to table alright." );
 		    //table.getMatrix()[0]; // OpenSim::TimeSeriesTable
                 //this will crash because table was not initialized.
                     time = table.getIndependentColumn()[i];
