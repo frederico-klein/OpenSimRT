@@ -263,21 +263,18 @@ class Acc
 			// get raw pose from table
 			auto qRaw_old = qTable.getRowAtIndex(i).getAsVector();
 			//qRaw_old( qRaw_old +"dddd" +1);
-			std::vector<double> * sqRaw = std::vector<double>(message->data.begin() + 1, message->data.end());
-			SimTK::Vector qRaw(0,sqRaw); //cant find the right copy constructor syntax. will for loop it
-			//for ()
+			std::vector<double> sqRaw = std::vector<double>(message->data.begin() + 1, message->data.end());
+			SimTK::Vector qRaw(19); //cant find the right copy constructor syntax. will for loop it
+			for (int i = 0;i < sqRaw.size();i++)
+			{
+				qRaw[i] = sqRaw[i];
+			}
 			
 
 
 			//is it the same
 			if (qRaw.size() != qRaw_old.size())
-				ROS_ERROR("size is different!");
-			for (int it=0; it < qRaw.size(); it++)
-			{
-				if (qRaw[it] - qRaw_old[it] > 0.1)
-					ROS_ERROR("Difference too big");
-			}
-			
+				ROS_FATAL("size is different!");
 			//OpenSim::TimeSeriesTable i
 			//get_from_subscriber(qRaw,t); //this will set qRaw and t from the subscribert
 
@@ -285,8 +282,16 @@ class Acc
 			double t = message->data[0];
 
 			if (t_old - t > 0.1)
-				ROS_ERROR("Difference too big");
-
+				ROS_ERROR("Reading from different timestamp! Did I lose a frame");
+			else // same timestamp, so we check the indexes are okay.
+			{
+				for (int it=0; it < qRaw.size(); it++)
+				{
+					if (qRaw[it] - qRaw_old[it] > 0.1)
+						ROS_ERROR("Difference too big");
+				}
+					
+			}
 
 			//	ROS_INFO_STREAM("TAN" << qRaw);
 

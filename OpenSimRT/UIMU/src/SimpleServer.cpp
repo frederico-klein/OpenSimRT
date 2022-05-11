@@ -22,6 +22,7 @@
 SimpleServer::SimpleServer (int PORT = 8080, int MAXLINE = 4096, bool Simple = true) {
 
 	if (Simple){
+		ROS_INFO("Simple simple server started");
 		ImSimple = true;	
 		//socklen_t sockfd;
 		buffer = new char[MAXLINE];
@@ -115,6 +116,7 @@ bool SimpleServer::receive()
 	}
 	else
 	{
+		ROS_INFO("not simple");
 		std::vector<double> myvec;
 		// now i need to set this myvec with the values i read for the quaternions somehow
 	        std::vector<std::string> tf_strs = {"/a", "b", "c"};	

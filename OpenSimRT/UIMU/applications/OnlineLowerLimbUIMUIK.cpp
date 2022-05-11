@@ -83,7 +83,7 @@ void run() {
     //UIMUInputDriver driver(ngimuDataFile, rate);
     //this is now a ROS thing, so we need to set it up as a ros node 
     ros::NodeHandle n;
-    UIMUInputDriver driver(8080, rate);
+    UIMUInputDriver driver(8080, rate, true);
     driver.startListening();
     ros::Publisher pub = n.advertise<opensimrt_msgs::Common>("producer",1000);
 
