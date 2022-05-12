@@ -10,8 +10,8 @@ file(
   applications/OnlineUpperLimbUIMUIK.cpp
   applications/OnlineUpperLimbUIMUIKar.cpp
   applications/nnn.cpp
-  applications/prod.cpp
-  applications/cons.cpp
+  applications/AccelerationBasedPhaseDetector.cpp
+  applications/ContactForceBasedPhaseDetector.cpp
 )
 # file(GLOB tests tests/*.cpp)
 
