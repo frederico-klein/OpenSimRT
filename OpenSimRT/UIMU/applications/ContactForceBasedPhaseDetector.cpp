@@ -208,7 +208,7 @@ class Fc
 			detectorParameters.sphereRadius = contactSphereRadius;
 			detectorParameters.rFootBodyName = rFootBodyName;
 			detectorParameters.lFootBodyName = lFootBodyName;
-			auto detector = ContactForceBasedPhaseDetector(model, detectorParameters);
+			detector = new ContactForceBasedPhaseDetector(model, detectorParameters);
 
 			// grfm prediction
 			GRFMPrediction::Parameters grfmParameters;
