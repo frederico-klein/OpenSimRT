@@ -107,6 +107,9 @@ class Fc
 				ini.getString(section, "GRF_LEFT_TORQUE_IDENTIFIER", "");
 			grfOrigin = ini.getSimtkVec(section, "GRF_ORIGIN", Vec3(0));
 
+			// virtual contact surface as ground
+			auto platform_offset = ini.getReal(section, "PLATFORM_OFFSET", 0.0);
+
 			// repeat cyclic motion X times
 			//simulationLoops = ini.getInteger(section, "SIMULATION_LOOPS", 0);
 			// remove last N samples in motion for smooth transition between loops
