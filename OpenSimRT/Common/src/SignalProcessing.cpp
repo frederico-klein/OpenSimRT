@@ -142,7 +142,7 @@ LowPassSmoothFilter::filter(const LowPassSmoothFilter::Input& input) {
     }
 
     // check if dt is consistent
-    if (abs(dt - dtPrev) > 1e-5) {
+    if (abs(dt - dtPrev) > 1e-3) {
         THROW_EXCEPTION("signal sampling frequency is not constant");
     }
 
