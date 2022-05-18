@@ -173,7 +173,7 @@ include(CPack)
 
 set(INI_FILE "/srv/data/setup.ini")
 set(DATA_DIR "/srv/data")
-set(LIBRARY_OUTPUT_PATH "${LIBRARY_OUTPUT_PATH}")
+set(LIBRARY_OUTPUT_PATH "${CATKIN_PACKAGE_LIB_DESTINATION}")
 configure_file("${PROJECT_SOURCE_DIR}/OpenSimRT/Settings.h.in"
   "${PROJECT_SOURCE_DIR}/OpenSimRT/Settings.h")
 set(CMAKE_EXTRA_INCLUDE_FILES)
