@@ -6,7 +6,8 @@ project(opensimrt VERSION 1.0.1)
 
 find_package(OpenSim)
 find_package(catkin REQUIRED COMPONENTS
-       opensimrt_msgs)
+       opensimrt_msgs
+       roscpp)
 
 # make this into a catkin package
 catkin_package(INCLUDE_DIRS 
@@ -17,6 +18,7 @@ catkin_package(INCLUDE_DIRS
 	OpenSimRT/Vicon/include
 	LIBRARIES Common UIMU Vicon RealTime
 	DEPENDS OpenSim
+	CATKIN_DEPENDS opensimrt_msgs roscpp
 	)
 
 #include_directories() maybe this is already done
@@ -95,8 +97,8 @@ mark_as_advanced(CMAKE_RELWITHDEBINFO_POSTFIX)
 mark_as_advanced(CMAKE_MINSIZEREL_POSTFIX)
 
 # build executables and libraries in the same place
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL "")
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL "")
+#set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL "")
+#set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR} CACHE INTERNAL "")
 
 ################################################################################
 # make install (https://github.com/forexample/package-example)
@@ -123,9 +125,9 @@ include(CMakePackageConfigHelpers)
 # configuration
 set(TARGET_EXPORT_NAME "${PROJECT_NAME}-targets" CACHE
   INTERNAL "Internal variable that is referenced by library generation")
-set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
-set(VERSION_CONFIG "${GENERATED_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
-set(PROJECT_CONFIG "${GENERATED_DIR}/${PROJECT_NAME}Config.cmake")
+set(GENERATED_DIR "${CMAKE_INSTALL_CONFIG}/generated")
+find_file(VERSION_CONFIG NAMES "${GENERATED_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
+find_file(PROJECT_CONFIG NAMES "${GENERATED_DIR}/${PROJECT_NAME}Config.cmake")
 
 # Configure '<PROJECT-NAME>ConfigVersion.cmake'
 # Note: PROJECT_VERSION is used as a VERSION
@@ -140,6 +142,7 @@ configure_package_config_file("cmake/Config.cmake.in"
 # intall configuration
 #   * <prefix>/lib/cmake/Foo/FooConfig.cmake
 #   * <prefix>/lib/cmake/Foo/FooConfigVersion.cmake
+
 install(FILES "${PROJECT_CONFIG}" "${VERSION_CONFIG}"
   DESTINATION "${CMAKE_INSTALL_CONFIG}")
 
@@ -153,9 +156,16 @@ install(EXPORT ${TARGET_EXPORT_NAME}
 #   DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/scripts/
 #   DESTINATION "${CMAKE_INSTALL_SCRIPTS}")
 
+install(DIRECTORY ${CATKIN_INCLUDE_DIRS}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
+
+
 # # data dir
 install(
-  DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data/
+  DIRECTORY ${CMAKE_INSTALL_CONFIG}/data/
   DESTINATION "${CMAKE_INSTALL_DATADIR}")
 
 ################################################################################
@@ -173,7 +183,7 @@ include(CPack)
 
 set(INI_FILE "/srv/data/setup.ini")
 set(DATA_DIR "/srv/data")
-set(LIBRARY_OUTPUT_PATH "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}")
+set(LIBRARY_OUTPUT_PATH_SETTINGS "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}")
 configure_file("${PROJECT_SOURCE_DIR}/OpenSimRT/Settings.h.in"
   "${PROJECT_SOURCE_DIR}/OpenSimRT/Settings.h")
 set(CMAKE_EXTRA_INCLUDE_FILES)

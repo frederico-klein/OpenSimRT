@@ -29,4 +29,4 @@
 
 std::string DATA_DIR = "@DATA_DIR@";
 std::string INI_FILE = "@INI_FILE@";
-std::string LIBRARY_OUTPUT_PATH = "@LIBRARY_OUTPUT_PATH@";
+std::string LIBRARY_OUTPUT_PATH = "@LIBRARY_OUTPUT_PATH_SETTINGS@";

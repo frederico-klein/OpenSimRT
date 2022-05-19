@@ -11,7 +11,7 @@
 find_package(OpenSim 4.0 REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 
 # dependencies
-include_directories(include/)
+#include_directories(include)
 #set(DEPENDENCY_LIBRARIES ${OpenSim_LIBRARIES})
 
 # dynamic library
