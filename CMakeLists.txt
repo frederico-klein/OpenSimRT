@@ -7,7 +7,9 @@ project(opensimrt VERSION 1.0.1)
 find_package(OpenSim)
 find_package(catkin REQUIRED COMPONENTS
        opensimrt_msgs
-       roscpp)
+       roscpp
+       std_msgs
+       tf)
 
 # make this into a catkin package
 catkin_package(INCLUDE_DIRS 
