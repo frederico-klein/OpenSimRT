@@ -1,4 +1,4 @@
-[![CI](https://github.com/mitkof6/OpenSimRT/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/mitkof6/OpenSimRT/actions/workflows/continuous-integration.yml)
+[![CI](https://github.com/frederico-klein/OpenSimRT/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/frederico-klein/OpenSimRT/actions/workflows/continuous-integration.yml)
 
 # OpenSimRT
 
