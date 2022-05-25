@@ -39,6 +39,10 @@
 #include <Actuators/Thelen2003Muscle.h>
 #include <Common/TimeSeriesTable.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/CSVFileAdapter.h>
+#include "ros/service_server.h"
+#include "signal.h"
+#include "std_srvs/Empty.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -66,7 +70,7 @@ class Acc
 	TimeSeriesTable tauLogger;
 	Vec3 grfOrigin;
 	string subjectDir;
-
+	int counter;
 	double previousTime, previousTimeDifference;
 
 	public:
@@ -166,14 +170,15 @@ class Acc
 			auto grfRightLabels = ExternalWrench::createGRFLabelsFromIdentifiers(
 					grfRightPointIdentifier, grfRightForceIdentifier,
 					grfRightTorqueIdentifier);
-			auto grfRightLogger = ExternalWrench::initializeLogger();
+			grfRightLogger = ExternalWrench::initializeLogger();
 
 			ExternalWrench::Parameters grfLeftFootPar{
 				grfLeftApplyBody, grfLeftForceExpressed, grfLeftPointExpressed};
 			auto grfLeftLabels = ExternalWrench::createGRFLabelsFromIdentifiers(
 					grfLeftPointIdentifier, grfLeftForceIdentifier,
 					grfLeftTorqueIdentifier);
-			auto grfLeftLogger = ExternalWrench::initializeLogger();
+			grfLeftLogger = ExternalWrench::initializeLogger();
+
 
 			vector<ExternalWrench::Parameters> wrenchParameters;
 			wrenchParameters.push_back(grfRightFootPar);
@@ -250,14 +255,18 @@ class Acc
 
 			//loopCounter = 0;
 			//i = 0;
+			counter = 0;
+		}
+		void start() {
 			previousTime = ros::Time::now().toSec();
 			previousTimeDifference = 0;
-
 		}
 	
-		void operator() (const opensimrt_msgs::CommonTimedConstPtr& message) {
+		void callback(const opensimrt_msgs::CommonTimedConstPtr& message) {
+		//void operator() (const opensimrt_msgs::CommonTimedConstPtr& message) {
 	    // repeat the simulation `simulationLoops` times
-	  		ROS_INFO_STREAM("Received message"); 
+	  		ROS_DEBUG_STREAM("Received message"); 
+			counter++;
 			//for (int k = 0; k < qTable.getNumRows() * simulationLoops; k++) {
 			
 			// well yes, but actually no.
@@ -296,8 +305,8 @@ class Acc
 				ROS_WARN_STREAM("Time difference greater than what our filter can handle: "<< std::setprecision(7) << ddt ); 
 			previousTime = t;
 			previousTimeDifference = timediff;
-			ROS_INFO_STREAM("T (msg):"<< std::setprecision (15) << t);
-			ROS_INFO_STREAM("DeltaT :"<< std::setprecision (15) << t);
+			ROS_DEBUG_STREAM("T (msg):"<< std::setprecision (15) << t);
+			ROS_DEBUG_STREAM("DeltaT :"<< std::setprecision (15) << t);
 
 			/*if (t_old - t > 0.1)
 				ROS_ERROR("Reading from different timestamp! Did I lose a frame");
@@ -311,7 +320,7 @@ class Acc
 					
 			}
 */
-			//	ROS_INFO_STREAM("TAN" << qRaw);
+			//	ROS_DEBUG_STREAM("TAN" << qRaw);
 
 			// increment the time by the total simulation time plus the sampling
 			// period, to keep increasing after each simulation loop
@@ -322,23 +331,23 @@ class Acc
 			auto q = ikFiltered.x;
 			auto qDot = ikFiltered.xDot;
 			auto qDDot = ikFiltered.xDDot;
-			ROS_INFO_STREAM("Filter ran ok");
+			ROS_DEBUG_STREAM("Filter ran ok");
 			// increment loop
 /*			if (++i == qTable.getNumRows()) {
 			    i = 0;
 			    loopCounter++;
 			}*/
 			if (!ikFiltered.isValid) { return; }
-			ROS_INFO_STREAM("Filter results are valid");
+			ROS_DEBUG_STREAM("Filter results are valid");
 
 			chrono::high_resolution_clock::time_point t1;
 			t1 = chrono::high_resolution_clock::now();
 
 				// perform grfm prediction
 			detector->updDetector({ikFiltered.t, q, qDot, qDDot});
-			ROS_INFO_STREAM("Update detector ok");
+			ROS_DEBUG_STREAM("Update detector ok");
 			auto grfmOutput = grfm->solve({ikFiltered.t, q, qDot, qDDot});
-			ROS_INFO_STREAM("GRFM estimation ran ok");
+			ROS_DEBUG_STREAM("GRFM estimation ran ok");
 
 			chrono::high_resolution_clock::time_point t2;
 			t2 = chrono::high_resolution_clock::now();
@@ -360,14 +369,14 @@ class Acc
 							       grfmOutput.left.force,
 							       grfmOutput.left.torque};
 
-			ROS_INFO_STREAM("updated visuals ok");
+			ROS_DEBUG_STREAM("updated visuals ok");
 
 			// solve ID
 			auto idOutput = id->solve(
 				{ikFiltered.t, q, qDot, qDDot,
 				 vector<ExternalWrench::Input>{grfRightWrench, grfLeftWrench}});
 			
-			ROS_INFO_STREAM("inverse dynamics ran ok");
+			ROS_DEBUG_STREAM("inverse dynamics ran ok");
 
 			// visualization
 			visualizer->update(q);
@@ -379,7 +388,10 @@ class Acc
 			grfRightLogger.appendRow(grfmOutput.t, ~grfmOutput.right.toVector());
 			grfLeftLogger.appendRow(grfmOutput.t, ~grfmOutput.left.toVector());
 			tauLogger.appendRow(ikFiltered.t, ~idOutput.tau);
-	    		//}
+	    		ROS_INFO_STREAM("Added data to loggers. "<< counter);
+			//if (counter > 720)
+			//	write_();
+			//}
 		}	
 		void finish() {
 		    cout << "Mean delay: " << double(sumDelayMS) / sumDelayMSCounter << " ms"
@@ -405,19 +417,65 @@ class Acc
 			    1e-1);
 	
 		}
-};
-int main(int argc, char **argv) {
-    try {
-	ros::init(argc, argv, "swallow_show");
-			ros::NodeHandle n;
-			ros::Rate loop_rate(10); //TODO: param!
+		bool see(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+		{
+			std::stringstream ss;
+		  	//vector<string> data = grfRightLogger.getTableMetaData().getKeys();
+			//ss << "Data Retrieved: \n";
+		  	std::copy(grfRightLogger.getTableMetaData().getKeys().begin(), grfRightLogger.getTableMetaData().getKeys().end(), std::ostream_iterator<string>(ss, " "));
+		  	ss << std::endl;
+			ROS_INFO_STREAM("grfRightLogger columns:" << ss.str());
+			return true;
+		}
+		bool write(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+		{
+			write_();
+			return true;
+		}
+		void write_() {
+//			std::stringstream ss;
+		  	//vector<string> data = grfRightLogger.getTableMetaData().getKeys();
+			//ss << "Data Retrieved: \n";
+//		  	std::copy(grfRightLogger.getTableMetaData().getKeys().begin(), grfRightLogger.getTableMetaData().getKeys().end(), std::ostream_iterator<string>(ss, " "));
+//		  	ss << std::endl;
+//			ROS_INFO_STREAM("grfRightLogger columns:" << ss.str());
+			ROS_INFO_STREAM("I TRY WRITE sto");
+			STOFileAdapter::write(grfRightLogger,"grfRight.sto");
+			STOFileAdapter::write(grfLeftLogger,"grfLeft.sto");
+			STOFileAdapter::write(tauLogger,"tau.sto");
+			ROS_INFO_STREAM("I TRY WRITE csv");
+			CSVFileAdapter::write(grfRightLogger,"grfRight.csv");
+			CSVFileAdapter::write(grfLeftLogger,"grfLeft.csv");
+			CSVFileAdapter::write(tauLogger,"tau.csv");
 
-			ros::Subscriber sub = n.subscribe<opensimrt_msgs::CommonTimed>("r_data", 1, Acc());	
-			ros::spin();
+			ROS_INFO_STREAM("i write");
+		}
+};
+void mySigintHandler(int sig)
+{
+    // Do custom action, like publishing stop msg
+    //perenial.write();
+    ros::shutdown();
+}
+int main(int argc, char **argv) {
+	ros::init(argc, argv, "swallow_show");
+	ROS_INFO_STREAM("called node AccelerationBasedPhaseDetector. aka swallow_show");
+			ros::NodeHandle n;
+    try {
+	Acc perenial;
+
+	//	signal(SIGINT, mySigintHandler);
+	perenial.start();		
+			//ros::Subscriber sub = n.subscribe<opensimrt_msgs::CommonTimed>("r_data", 1, perenial);	
+	ros::Subscriber sub = n.subscribe("r_data", 1, &Acc::callback, &perenial);	
+	ros::ServiceServer writecsv = n.advertiseService("write", &Acc::write, &perenial);
+	ros::ServiceServer seecsv = n.advertiseService("see", &Acc::see, &perenial);
+	ros::spin();
     } catch (exception& e) {
         cout << e.what() << endl;
         return -1;
     }
+    ROS_INFO_STREAM("Goodbye!");
     return 0;
 }
 
