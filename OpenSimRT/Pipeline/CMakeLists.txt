@@ -6,10 +6,8 @@ file(GLOB sources src/*.cpp)
 # file(GLOB applications applications/*.cpp)
 file(
   GLOB applications
-  applications/OnlineLowerLimbUIMUIK.cpp
-  applications/OnlineUpperLimbUIMUIK.cpp
-  applications/OnlineUpperLimbUIMUIKar.cpp
-  applications/nnn.cpp
+  applications/AccelerationBasedPhaseDetector.cpp
+  applications/ContactForceBasedPhaseDetector.cpp
 )
 # file(GLOB tests tests/*.cpp)
 
@@ -19,13 +17,14 @@ include_directories(../RealTime/include/)
 include_directories(../Common/include/)
 
 # dynamic library
-set(target UIMU)
+#set(target Pipeline)
 
-addlibrary(
-  KIT ${target}
-  LINKLIBS ${DEPENDENCY_LIBRARIES}
-  INCLUDES ${includes}
-  SOURCES ${sources})
+
+#addlibrary(
+#  KIT ${target}
+#  LINKLIBS ${DEPENDENCY_LIBRARIES}
+#  INCLUDES ${includes}
+#  SOURCES ${sources})
 
 # The genmsg package gives us the code generator macros
 #find_package(roscpp REQUIRED)
