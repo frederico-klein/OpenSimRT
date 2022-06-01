@@ -74,6 +74,7 @@ class RealTime_API GaitPhaseDetector {
      */
     const double getSingleSupportDuration();
 
+    virtual void updDetector(const GRFMPrediction::Input& input); 
  protected:
     // Function type for event detection methods in a Sliding Window.
     template <typename T>

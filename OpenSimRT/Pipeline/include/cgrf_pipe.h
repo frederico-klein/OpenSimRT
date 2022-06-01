@@ -1,50 +1,18 @@
 #ifndef PIPELINE_CGRFM_HEADER_FBK_01062022
 #define PIPELINE_CGRFM_HEADER_FBK_01062022
 
-#include "opensimrt_msgs/CommonTimed.h"
 #include "experimental/ContactForceBasedPhaseDetector.h"
-#include "experimental/GRFMPrediction.h"
-#include "SignalProcessing.h"
-#include "Visualization.h"
-#include <Common/TimeSeriesTable.h>
-#include "ros/service_server.h"
-#include "std_srvs/Empty.h"
-#include "Pipeline/include/common_node.h"
+#include "Pipeline/include/grf_pipe.h"
 
 namespace Pipeline
 {
-	class Fc:Pipeline::CommonNode
+	class Fc: public Pipeline::Grf
 	{
-		//TimeSeriesTable qTable;
-		//int simulationLoops;
-		//int loopCounter;
-		OpenSimRT::LowPassSmoothFilter* filter;
 		OpenSimRT::ContactForceBasedPhaseDetector* detector;
-		OpenSimRT::GRFMPrediction* grfm;
-		double sumDelayMS;
-		int sumDelayMSCounter;
-		//int i;
-		OpenSimRT::InverseDynamics* id;
-		OpenSimRT::BasicModelVisualizer* visualizer;
-		OpenSimRT::ForceDecorator* rightGRFDecorator;
-		OpenSimRT::ForceDecorator* leftGRFDecorator;
-		OpenSim::TimeSeriesTable* grfRightLogger;
-		OpenSim::TimeSeriesTable* grfLeftLogger;
-		OpenSim::TimeSeriesTable* tauLogger;
-		SimTK::Vec3 grfOrigin;
-		std::string subjectDir;
-		int counter;
-		double previousTime, previousTimeDifference;
-
+		const std::string section = "TEST_CONTACT_FORCE_GRFM_PREDICTION_FROM_FILE";
 		public:
 			Fc();
 			~Fc();
-			void onInit(); 
-		
-			void callback(const opensimrt_msgs::CommonTimedConstPtr& message) ;
-			void finish(); 
-			bool see(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-			void write_(); 
 	};
 }
 #endif

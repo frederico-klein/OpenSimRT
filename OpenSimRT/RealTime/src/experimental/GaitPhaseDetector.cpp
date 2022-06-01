@@ -53,6 +53,10 @@ GaitPhaseDetector::GaitPhaseDetector(const int& windowSize) : Tds(-1), Tss(-1) {
     };
 };
 
+void GaitPhaseDetector::updDetector(const GRFMPrediction::Input &Input)
+{
+	std::cout << "NOT IMPLEMENTED!!" << std::endl;
+}
 bool GaitPhaseDetector::isDetectorReady() {
     // detector is ready when time constants, gait phase and leading leg
     // member variables are valid

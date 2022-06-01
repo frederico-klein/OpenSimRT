@@ -1,7 +1,9 @@
+#include "grf_pipe.h"
 #include "ros/ros.h"
 #include "ros/service_server.h"
 #include "signal.h"
 #include "Pipeline/include/agrf_pipe.h"
+#include "Pipeline/include/grf_pipe.h"
 
 void mySigintHandler(int sig)
 {
@@ -19,7 +21,7 @@ int main(int argc, char **argv) {
 	//	signal(SIGINT, mySigintHandler);
 	perenial.onInit();		
 			//ros::Subscriber sub = n.subscribe<opensimrt_msgs::CommonTimed>("r_data", 1, perenial);	
-	ros::ServiceServer seecsv = n.advertiseService("see", &Pipeline::Acc::see, &perenial);
+	ros::ServiceServer seecsv = n.advertiseService("see", &Pipeline::Acc::see, (Pipeline::Grf* )&perenial);
 	ros::spin();
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;

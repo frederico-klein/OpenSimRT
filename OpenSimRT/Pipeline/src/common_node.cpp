@@ -17,21 +17,29 @@
 
 Pipeline::CommonNode::CommonNode()
 {
+	if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+	   ros::console::notifyLoggerLevelsChanged();
+	}
     pub = nh.advertise<opensimrt_msgs::CommonTimed>("output", 1000);
     ros::ServiceServer outLabels = nh.advertiseService("out_labels", &CommonNode::outLabels, this);
     sub = nh.subscribe("input",5, &CommonNode::callback, this);
     ros::Rate r(1);
     //output_labels = qTable.getColumnLabels();
     opensimrt_msgs::LabelsSrv l;
-    while(!ros::service::call("in_labels", l))
+    //while(!ros::service::call("in_labels", l))
+    while(ros::ok())
     {
+    	if(ros::service::call("in_labels", l))
+	{
+	    input_labels = l.response.data;
+	    ros::ServiceServer write_csv = nh.advertiseService("write_csv", &CommonNode::writeCsv, this);
+	    ros::ServiceServer write_sto = nh.advertiseService("write_sto", &CommonNode::writeSto, this);
+	    break;
+	}
 	ros::spinOnce();
-	r.sleep();
 	ROS_INFO_STREAM("Waiting to read input labels."); 
+	r.sleep();
     }
-    input_labels = l.response.data;
-    ros::ServiceServer write_csv = nh.advertiseService("write_csv", &CommonNode::writeCsv, this);
-    ros::ServiceServer write_sto = nh.advertiseService("write_sto", &CommonNode::writeSto, this);
 
 } //constructor
 Pipeline::CommonNode::~CommonNode()
