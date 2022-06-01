@@ -8,7 +8,9 @@ file(
   GLOB applications
   applications/AccelerationBasedPhaseDetector.cpp
   applications/ContactForceBasedPhaseDetector.cpp
+  applications/agrf.cpp
 )
+
 # file(GLOB tests tests/*.cpp)
 
 # dependencies
@@ -17,14 +19,14 @@ include_directories(../RealTime/include/)
 include_directories(../Common/include/)
 
 # dynamic library
-#set(target Pipeline)
+set(target Pipeline)
 
 
-#addlibrary(
-#  KIT ${target}
-#  LINKLIBS ${DEPENDENCY_LIBRARIES}
-#  INCLUDES ${includes}
-#  SOURCES ${sources})
+addlibrary(
+  KIT ${target}
+  LINKLIBS ${DEPENDENCY_LIBRARIES}
+  INCLUDES ${includes}
+  SOURCES ${sources})
 
 # The genmsg package gives us the code generator macros
 #find_package(roscpp REQUIRED)

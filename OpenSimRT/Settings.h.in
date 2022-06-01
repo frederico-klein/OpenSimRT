@@ -23,10 +23,11 @@
  *
  * @author Dimitar Stanev <jimstanev@gmail.com>
  */
-#pragma once
-
+#ifndef SETTINGS_HEADER_OPENSIMRT_FBK_31052022
+#define SETTINGS_HEADER_OPENSIMRT_FBK_31052022
 #include <string>
 
-std::string DATA_DIR = "@DATA_DIR@";
-std::string INI_FILE = "@INI_FILE@";
-std::string LIBRARY_OUTPUT_PATH = "@LIBRARY_OUTPUT_PATH_SETTINGS@";
+const std::string DATA_DIR = "@DATA_DIR@";
+const std::string INI_FILE = "@INI_FILE@";
+const std::string LIBRARY_OUTPUT_PATH = "@LIBRARY_OUTPUT_PATH_SETTINGS@";
+#endif
