@@ -8,7 +8,7 @@ namespace Pipeline
 {
 	class Fc: public Pipeline::Grf
 	{
-		OpenSimRT::ContactForceBasedPhaseDetector* detector;
+		//OpenSimRT::ContactForceBasedPhaseDetector* detector;
 		const std::string section = "TEST_CONTACT_FORCE_GRFM_PREDICTION_FROM_FILE";
 		public:
 			Fc();

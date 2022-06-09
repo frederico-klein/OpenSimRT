@@ -9,6 +9,7 @@ file(
   applications/AccelerationBasedPhaseDetector.cpp
   applications/ContactForceBasedPhaseDetector.cpp
   applications/agrf.cpp
+  applications/cgrf.cpp
 )
 
 # file(GLOB tests tests/*.cpp)

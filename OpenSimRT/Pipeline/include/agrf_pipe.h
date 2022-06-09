@@ -8,7 +8,7 @@ namespace Pipeline
 {
 	class Acc: public Pipeline::Grf
 	{
-		OpenSimRT::AccelerationBasedPhaseDetector* detector;
+		//OpenSimRT::AccelerationBasedPhaseDetector* detector;
 		const std::string section = "TEST_ACCELERATION_GRFM_PREDICTION_FROM_FILE";	
 		public:
 			Acc();
