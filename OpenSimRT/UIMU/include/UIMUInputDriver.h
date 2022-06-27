@@ -30,7 +30,7 @@
 #include <Common/TimeSeriesTable.h>
 #include <condition_variable>
 #include <thread>
-#include "SimpleServer.h"
+#include "OrientationProvider.h"
 #include <vector>
 
 namespace OpenSimRT {
@@ -43,8 +43,7 @@ class  UIMUInputDriver : public InputDriver<UIMUData> {
     /**
      * Create a NGIMU driver that streams data from file at a constant rate.
      */
-    UIMUInputDriver(const int port,
-                             const double& sendRate, bool simple);
+    UIMUInputDriver();
     UIMUInputDriver(const int port,
                              const double& sendRate);
     ~UIMUInputDriver(); // dtor
@@ -84,8 +83,8 @@ class  UIMUInputDriver : public InputDriver<UIMUData> {
      */
     std::pair<double, SimTK::Vector> getFrameAsVector() const;
 
-    // Simple UDP server implementation
-    SimpleServer server;
+    // Using orientation provider pointer to choose server implementation
+    OrientationProvider* server;
 
     OpenSim::TimeSeriesTable initializeLogger() const;
 

@@ -22,20 +22,24 @@
 #include <iostream>
 #include <vector>
 #include "ros/ros.h"
+#include "TfServer.h"
+#include "CometaServer.h"
 
 using namespace OpenSimRT;
 using namespace SimTK;
 
-UIMUInputDriver::UIMUInputDriver(const int port,
-                                                   const double& sendRate, bool simple)
-        :server(port, 4096, simple), rate(sendRate), terminationFlag(false) {
+UIMUInputDriver::UIMUInputDriver()
+        : terminationFlag(false) {
+	server = new TfServer;	
         imu_names = {"torax", "humerus", "radius" };
 	ROS_WARN("IMU names are hardcoded!!! This needs to be solved or saving the TimeSeriesTable as CSV will be wrong!");
         }
 UIMUInputDriver::UIMUInputDriver(const int port,
                                                    const double& sendRate)
-        :server(port, 4096, true), rate(sendRate), terminationFlag(false) {
-        imu_names = {"torax", "humerus", "radius" };
+        : terminationFlag(false), rate(sendRate) {
+        server = new CometaServer(port, 4096);
+
+	imu_names = {"torax", "humerus", "radius" };
 	ROS_WARN("IMU names are hardcoded!!! This needs to be solved or saving the TimeSeriesTable as CSV will be wrong!");
 
         }
@@ -57,12 +61,12 @@ void UIMUInputDriver::startListening() {
                     // get something from the udp stream
                     //TODO: rosdebug
 		    ROS_DEBUG_STREAM( "Acquired lock. receiving.");
-                    if (! server.receive()){
+                    if (! server->receive()){
                             ROS_INFO_STREAM( "Received goodbye message!" );
                             terminationFlag = true;
                             break;
                     }
-                    std::vector<double> output = server.output;
+                    std::vector<double> output = server->output;
                     ROS_DEBUG_STREAM("Received.");
 
                     // there is no table, so this will be empty
@@ -70,7 +74,7 @@ void UIMUInputDriver::startListening() {
                     //time = output[0]; // probably a double
                     //SimTK::readUnformatted<SimTK::Vector>(s, frame);// I will keep
 
-		    ROS_DEBUG_STREAM("read input size from SimpleServer" << output.size());
+		    ROS_DEBUG_STREAM("read input size from OrientationProvider" << output.size());
                     table.appendRow(output[0], output.begin()+1, output.end()); // superflex!
 		    ROS_DEBUG_STREAM( "added to table alright." );
 		    //table.getMatrix()[0]; // OpenSim::TimeSeriesTable

@@ -84,7 +84,7 @@ void run() {
     //UIMUInputDriver driver(ngimuDataFile, rate);
     //this is now a ROS thing, so we need to set it up as a ros node 
     ros::NodeHandle n;
-    UIMUInputDriver driver(8080, rate, true);
+    UIMUInputDriver driver(8080, rate); //cometa server
     driver.startListening();
     ros::Publisher re_pub = n.advertise<opensimrt_msgs::CommonTimed>("r_data", 1000);
     ros::Publisher labels_pub = n.advertise<opensimrt_msgs::Labels>("r_labels", 1000, true); //latching topic

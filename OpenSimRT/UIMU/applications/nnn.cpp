@@ -34,6 +34,7 @@
 #include <OpenSim/Common/CSVFileAdapter.h>
 //#include <OpenSim/Common/STOFileAdapter.h>
 
+#include <ros/console.h>
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "geometry_msgs/PoseStamped.h"
@@ -90,10 +91,14 @@ void run() {
 
     // ngimu input data driver from file
     //UIMUInputDriver driver(ngimuDataFile, rate);
-    UIMUInputDriver driver(8080, rate, false);
+    ROS_INFO_STREAM("so far so good");
+    UIMUInputDriver driver; // tf server
     driver.startListening();
+    ROS_INFO_STREAM("so far so good 1");
+
     auto imuLogger = driver.initializeLogger();
 
+    ROS_INFO_STREAM("so far so good 2");
     // calibrator
     IMUCalibrator clb(model, &driver, imuObservationOrder);
     clb.recordNumOfSamples(10);
@@ -207,9 +212,11 @@ void run() {
     // STOFileAdapter::write(
     //         qLogger, subjectDir + "real_time/inverse_kinematics/q_imu.sto");
 }
-
 int main(int argc, char** argv) {
     try {
+	if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+	   ros::console::notifyLoggerLevelsChanged();
+	}
         ros::init(argc, argv, "talker");
         ros::NodeHandle n;
        	chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
