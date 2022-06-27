@@ -18,12 +18,16 @@
 
 class TfServer: public OrientationProvider {
  public:
-	TfServer();
+	TfServer(std::vector<std::string> tf_names = {"a", "b", "c"});
 	~TfServer();
 	bool receive();
+
 	tf::TransformListener listener;
 	//std::vector<double> output;
 	std::vector<double> readTransformIntoOpensim(std::string);
-	
+	std::vector<std::string> tf_strs;
+	std::string world_tf_reference = "/map";
+	void set_world_reference(std::string);
+	void set_tfs(std::vector<std::string> tf_names);
 };
 #endif

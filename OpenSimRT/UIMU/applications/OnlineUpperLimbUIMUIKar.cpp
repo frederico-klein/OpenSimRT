@@ -42,6 +42,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
+#include "TfServer.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -53,7 +54,7 @@ ros::Publisher poser_pub;
 
 void run() {
     INIReader ini(INI_FILE);
-    auto section = "UPPER_LIMB_AR";
+    auto section = "UPPER_LIMB_NGIMU";
     // imu calibration settings
     auto imuDirectionAxis = ini.getString(section, "IMU_DIRECTION_AXIS", "");
     auto imuBaseBody = ini.getString(section, "IMU_BASE_BODY", "");
@@ -91,6 +92,8 @@ void run() {
     // ngimu input data driver from file
     //UIMUInputDriver driver(ngimuDataFile, rate);
     UIMUInputDriver driver; //tf server
+    TfServer* srv = dynamic_cast<TfServer*>(driver.server);
+	srv->set_tfs({"ximu3","ximu3", "ximu3"});
     driver.startListening();
     auto imuLogger = driver.initializeLogger();
 

@@ -28,10 +28,10 @@
 using namespace OpenSimRT;
 using namespace SimTK;
 
-UIMUInputDriver::UIMUInputDriver()
-        : terminationFlag(false) {
-	server = new TfServer;	
+UIMUInputDriver::UIMUInputDriver(const double& sendRate)
+        : terminationFlag(false), rate(sendRate) {
         imu_names = {"torax", "humerus", "radius" };
+	server = new TfServer(imu_names);	
 	ROS_WARN("IMU names are hardcoded!!! This needs to be solved or saving the TimeSeriesTable as CSV will be wrong!");
         }
 UIMUInputDriver::UIMUInputDriver(const int port,

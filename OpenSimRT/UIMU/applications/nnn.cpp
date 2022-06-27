@@ -44,6 +44,8 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 
+#include "TfServer.h"
+
 using namespace std;
 using namespace OpenSim;
 using namespace OpenSimRT;
@@ -54,7 +56,7 @@ ros::Publisher poser_pub;
 
 void run() {
     INIReader ini(INI_FILE);
-    auto section = "UPPER_LIMB_NGIMU_OFFLINE";
+    auto section = "UPPER_LIMB_NGIMU";
     // imu calibration settings
     auto imuDirectionAxis = ini.getString(section, "IMU_DIRECTION_AXIS", "");
     auto imuBaseBody = ini.getString(section, "IMU_BASE_BODY", "");
@@ -93,6 +95,8 @@ void run() {
     //UIMUInputDriver driver(ngimuDataFile, rate);
     ROS_INFO_STREAM("so far so good");
     UIMUInputDriver driver; // tf server
+    TfServer* srv = dynamic_cast<TfServer*>(driver.server);
+	srv->set_tfs({"ximu3","ximu3", "ximu3"});
     driver.startListening();
     ROS_INFO_STREAM("so far so good 1");
 
@@ -118,12 +122,12 @@ void run() {
     int sumDelayMS = 0;
     int numFrames = 0;
 
-    static tf::TransformBroadcaster br;
-    static tf::TransformListener listener;
+    //static tf::TransformBroadcaster br;
+    //static tf::TransformListener listener;
 
     try { // main loop
         while (!driver.shouldTerminate()) {
-		tf::StampedTransform transform_from_ar;
+		/*tf::StampedTransform transform_from_ar;
 		try{
       			listener.lookupTransform("/map", "/ar_marker_10",  
                                ros::Time(0), transform_from_ar);
@@ -138,7 +142,7 @@ void run() {
       			ROS_ERROR("%s",ex.what());
       			//ros::Duration(1.0).sleep();
     		}
-
+		*/
             // get input from imus
             auto imuData = driver.getFrame();
             numFrames++;
@@ -150,15 +154,15 @@ void run() {
             auto pose = ik.solve(
                     {imuData.first, {}, clb.transform(imuData.second)});
 	    
-	    std_msgs::String msg;
-	    std::stringstream ss;
+	    //std_msgs::String msg;
+	    //std::stringstream ss;
 	    //pose is something i can send to cout i think, so this should give me something
 	    //
 	    //ss << "hello world " << endl;
-	    ss << pose.q[0] << " " << pose.q[1] << " " << pose.q[2];
+	    //ss << pose.q[0] << " " << pose.q[1] << " " << pose.q[2];
 
-	    auto qqqq = imuData.second[0].getQuaternion();
-	    ROS_INFO_STREAM("QQQQ" << qqqq);
+	    //auto qqqq = imuData.second[0].getQuaternion();
+	    //ROS_INFO_STREAM("QQQQ" << qqqq);
 	    //	    geometry_msgs::PoseStamped pp;
 
 	    
@@ -171,17 +175,17 @@ void run() {
 	    //	    pp.pose.orientation = quat_msg;
 	    //	    poser_pub.publish(pp);
 
-	    tf::Transform transform;
-	    transform.setOrigin( tf::Vector3(0.5, 0.0, 0.0) );
-	    tf::Quaternion q(qqqq[1],qqqq[2],qqqq[3],qqqq[0]); //x,y,z,w
+	    //tf::Transform transform;
+	    //transform.setOrigin( tf::Vector3(0.5, 0.0, 0.0) );
+	    //tf::Quaternion q(qqqq[1],qqqq[2],qqqq[3],qqqq[0]); //x,y,z,w
 	    //tf::Quaternion q;
 	    //ROS_INFO("%f", pose.q[3]);
 	    //q.setRPY(pose.q[0], pose.q[1], pose.q[2]);
-	    transform.setRotation(q);
-	    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "torax_imu"));
+	    //transform.setRotation(q);
+	    //br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "torax_imu"));
 
 
-	    msg.data = ss.str();
+	    //msg.data = ss.str();
 	    //ROS_INFO("%s", msg.data.c_str());
 	    //chatter_pub.publish(msg);
 
@@ -214,13 +218,13 @@ void run() {
 }
 int main(int argc, char** argv) {
     try {
-	if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+	/*if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
 	   ros::console::notifyLoggerLevelsChanged();
-	}
+	}*/
         ros::init(argc, argv, "talker");
         ros::NodeHandle n;
-       	chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
-       	poser_pub = n.advertise<geometry_msgs::Pose>("poser", 1000);
+       	//chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
+       	//poser_pub = n.advertise<geometry_msgs::Pose>("poser", 1000);
         run();
     } catch (exception& e) {
         cout << e.what() << endl;
