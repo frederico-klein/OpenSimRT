@@ -22,7 +22,10 @@ Pipeline::CommonNode::CommonNode()
 	}
     pub = nh.advertise<opensimrt_msgs::CommonTimed>("output", 1000);
     ros::ServiceServer outLabels = nh.advertiseService("out_labels", &CommonNode::outLabels, this);
-    sub = nh.subscribe("input",5, &CommonNode::callback, this);
+    sub.subscribe(nh, "input",5);
+    //register the callback
+    sub.registerCallback(&CommonNode::callback,this);
+    //sub = nh.subscribe("input",5, &CommonNode::callback, this);
     ros::Rate r(1);
     //output_labels = qTable.getColumnLabels();
     opensimrt_msgs::LabelsSrv l;

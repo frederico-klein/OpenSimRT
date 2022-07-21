@@ -10,6 +10,9 @@
 #include "ros/subscriber.h"
 #include <Common/TimeSeriesTable.h>
 
+#include <message_filters/subscriber.h>
+
+
 //idk whats going on
 #include "Settings.h"
 
@@ -27,7 +30,9 @@ namespace Pipeline
 			std::vector<std::string> output_labels;
 
 			ros::NodeHandle nh{"~"};
-			ros::Subscriber sub; //input
+			//ros::Subscriber sub; //input
+			message_filters::Subscriber<opensimrt_msgs::CommonTimed> sub;
+
 			ros::Publisher pub; //output
 			NamedTables loggers;
 			std::string data_save_dir{"/data/"};
