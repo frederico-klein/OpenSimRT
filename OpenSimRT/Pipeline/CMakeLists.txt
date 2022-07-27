@@ -10,6 +10,7 @@ file(
   applications/ContactForceBasedPhaseDetector.cpp
   applications/agrf.cpp
   applications/cgrf.cpp
+  applications/id_pipeline.cpp
 )
 
 # file(GLOB tests tests/*.cpp)
