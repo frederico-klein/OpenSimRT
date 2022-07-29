@@ -14,18 +14,31 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
 
-
+//constructor
 Pipeline::CommonNode::CommonNode()
 {
 	if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
 	   ros::console::notifyLoggerLevelsChanged();
 	}
+
+} 
+void Pipeline::CommonNode::onInit(int num_sinks)
+{
     pub = nh.advertise<opensimrt_msgs::CommonTimed>("output", 1000);
-    ros::ServiceServer outLabels = nh.advertiseService("out_labels", &CommonNode::outLabels, this);
-    sub.subscribe(nh, "input",5);
-    //register the callback
-    sub.registerCallback(&CommonNode::callback,this);
-    //sub = nh.subscribe("input",5, &CommonNode::callback, this);
+    outLabelsSrv = nh.advertiseService("out_labels", &CommonNode::outLabels, this);
+    
+    if (num_sinks == 1)
+    {
+	    ROS_INFO_STREAM("registering callback");
+	    //register the callback
+    	    sub.subscribe(nh, "input",10);
+	    sub.registerCallback(&CommonNode::callback,this);
+	    //sub = nh.subscribe("input",5, &CommonNode::callback, this);
+    }
+    else
+    {
+	    ROS_INFO_STREAM("not single_sink, callback isnt registered yet!");
+    }
     ros::Rate r(1);
     //output_labels = qTable.getColumnLabels();
     opensimrt_msgs::LabelsSrv l;
@@ -44,7 +57,11 @@ Pipeline::CommonNode::CommonNode()
 	r.sleep();
     }
 
-} //constructor
+
+
+}
+
+//destructor
 Pipeline::CommonNode::~CommonNode()
 {
 	if(!at_least_one_logger_initialized)

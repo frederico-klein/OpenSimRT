@@ -37,18 +37,15 @@ namespace Pipeline
 			NamedTables loggers;
 			std::string data_save_dir{"/data/"};
 			bool at_least_one_logger_initialized = false;
-			virtual void onInit()
-			{
-				//does commonnode initialization stuff
-				ROS_ERROR_STREAM("initialization not implemented!");
-			}
+			void onInit(int num_sinks = 1);
 			virtual void callback(const opensimrt_msgs::CommonTimedConstPtr& message) 
 			{
-				ROS_ERROR_STREAM("callback not implemented!");
+				ROS_ERROR_STREAM("callback1 not implemented!");
 			}
 			void saveStos();
 			void saveCsvs();
 		protected:
+			ros::ServiceServer outLabelsSrv;
 			bool outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res );
 			bool writeCsv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool writeSto(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);

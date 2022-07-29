@@ -1,3 +1,5 @@
+#include "common_node.h"
+#include "ros/message_traits.h"
 #include "ros/ros.h"
 #include "opensimrt_msgs/CommonTimed.h"
 #include "opensimrt_msgs/Labels.h"
@@ -16,7 +18,9 @@
 #include <exception>
 #include <numeric>
 #include <utility>
+#include <vector>
 #include "ros/service_server.h"
+#include "ros/time.h"
 #include "signal.h"
 #include "std_srvs/Empty.h"
 #include "Pipeline/include/grf_pipe.h"
@@ -38,6 +42,7 @@ Pipeline::Grf::~Grf()
 }
 
 void Pipeline::Grf::onInit() {
+	Pipeline::CommonNode::onInit();
 	previousTime = ros::Time::now().toSec();
 	previousTimeDifference = 0;
 
@@ -179,17 +184,41 @@ void Pipeline::Grf::callback(const opensimrt_msgs::CommonTimedConstPtr& message)
 		ROS_ERROR_STREAM("Error in visualizer. cannot show data!!!!!" <<std::endl << e.what());
 	}
 
-	try{
+	//
+	OpenSim::TimeSeriesTable output;
+	std::vector<double> p;
+	auto a = ~grfmOutput.right.toVector() ;
+	auto b = ~grfmOutput.left.toVector() ;
 
-	// log data (use filter time to align with delay)
-	if(false)
+	p.insert(p.end(),a.begin(),a.end());
+	p.insert(p.end(),b.begin(),b.end());
+	output.appendRow(grfmOutput.t,p);
+	opensimrt_msgs::CommonTimed msg;
+	if (false)
 	{
-		ROS_WARN_STREAM("THIS SHOULDNT BE RUNNING");
-		grfRightLogger->appendRow(grfmOutput.t, ~grfmOutput.right.toVector());
-		grfLeftLogger->appendRow(grfmOutput.t, ~grfmOutput.left.toVector());
-		tauLogger->appendRow(ikFiltered.t, ~idOutput.tau);
-		ROS_INFO_STREAM("Added data to loggers. "<< counter);
-	}}
+		std_msgs::Header h;
+		h.frame_id = "subject";
+		h.stamp = ros::Time::now();
+		msg.header = h;
+	} else
+	{
+		msg.header = message->header; //will this break? it will be publishing messages in the past
+	}
+	msg.time = message->time;
+	msg.data.insert(msg.data.end(), p.begin(),p.end());
+	pub.publish(msg);
+
+	try{
+		// log data (use filter time to align with delay)
+		if(false)
+		{
+			ROS_WARN_STREAM("THIS SHOULDNT BE RUNNING");
+			grfRightLogger->appendRow(grfmOutput.t, ~grfmOutput.right.toVector());
+			grfLeftLogger->appendRow(grfmOutput.t, ~grfmOutput.left.toVector());
+			tauLogger->appendRow(ikFiltered.t, ~idOutput.tau);
+			ROS_INFO_STREAM("Added data to loggers. "<< counter);
+		}
+	}
 	catch (std::exception& e)
 	{
 		ROS_WARN_STREAM("Error while updating loggers, data will not be saved" <<std::endl << e.what());

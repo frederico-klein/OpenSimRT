@@ -1,3 +1,5 @@
+#include "dualsink_pipe.h"
+#include "message_filters/time_synchronizer.h"
 #include "ros/ros.h"
 #include "opensimrt_msgs/CommonTimed.h"
 #include "opensimrt_msgs/Labels.h"
@@ -158,13 +160,22 @@ Pipeline::Id::~Id()
 }
 
 void Pipeline::Id::onInit() {
+	Pipeline::DualSink::onInit();
+	
 	previousTime = ros::Time::now().toSec();
 	previousTimeDifference = 0;
-
+			message_filters::Subscriber<opensimrt_msgs::CommonTimed> sub0;
+			sub0.registerCallback(&Pipeline::Id::callback0,this);
+			message_filters::Subscriber<opensimrt_msgs::CommonTimed> sub1;
+			sub1.registerCallback(&Pipeline::Id::callback1,this);
+	
 	// when i am running this it is already initialized, so i have to add the loggers to the list I want to save afterwards
 	initializeLoggers("grfRight",grfRightLogger);
 	initializeLoggers("grfLeft", grfLeftLogger);
 	initializeLoggers("tau",tauLogger);
+	message_filters::TimeSynchronizer<opensimrt_msgs::CommonTimed, opensimrt_msgs::CommonTimed> sync(sub, sub2, 500);
+	sync.registerCallback(std::bind(&Pipeline::Id::callback, this, std::placeholders::_1, std::placeholders::_2));
+	//sync.registerCallback(&Pipeline::Id::callback, this);
 
 }
 
@@ -191,11 +202,17 @@ ExternalWrench::Input Pipeline::Id::parse_message(const opensimrt_msgs::CommonTi
 	cout << endl;
 	return a;
 }
+void Pipeline::Id::callback0(const opensimrt_msgs::CommonTimedConstPtr& message_ik) {
+	ROS_INFO_STREAM("callback ik called");
+}
+void Pipeline::Id::callback1(const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
+	ROS_INFO_STREAM("callback grf called");
+}
 
 void Pipeline::Id::callback(const opensimrt_msgs::CommonTimedConstPtr& message_ik, const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
 //void Pipeline::Id::operator() (const opensimrt_msgs::CommonTimedConstPtr& message) {
 // repeat the simulation `simulationLoops` times
-	ROS_DEBUG_STREAM("Received message. Running Id loop"); 
+	ROS_ERROR_STREAM("Received message. Running Id loop"); 
 	counter++;
 	//for (int k = 0; k < qTable.getNumRows() * simulationLoops; k++) {
 	

@@ -44,7 +44,7 @@ namespace Pipeline
 			void write_();
 			OpenSimRT::LowPassSmoothFilter* filter;
 			std::string subjectDir;
-		
+	
 			//virtual void detectorFunction();	
 	};
 }
