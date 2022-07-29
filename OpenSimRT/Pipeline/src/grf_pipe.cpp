@@ -185,14 +185,14 @@ void Pipeline::Grf::callback(const opensimrt_msgs::CommonTimedConstPtr& message)
 	}
 
 	//
-	OpenSim::TimeSeriesTable output;
+	//OpenSim::TimeSeriesTable output;
 	std::vector<double> p;
-	auto a = ~grfmOutput.right.toVector() ;
-	auto b = ~grfmOutput.left.toVector() ;
+	auto a = grfmOutput.right.toVector() ;
+	auto b = grfmOutput.left.toVector() ;
 
 	p.insert(p.end(),a.begin(),a.end());
 	p.insert(p.end(),b.begin(),b.end());
-	output.appendRow(grfmOutput.t,p);
+	//output.appendRow(grfmOutput.t,p);
 	opensimrt_msgs::CommonTimed msg;
 	if (false)
 	{

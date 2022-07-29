@@ -177,29 +177,53 @@ void Pipeline::Id::onInit() {
 	sync.registerCallback(std::bind(&Pipeline::Id::callback, this, std::placeholders::_1, std::placeholders::_2));
 	//sync.registerCallback(&Pipeline::Id::callback, this);
 
+	//i should have the input labels from grf already
+	
+	ROS_INFO_STREAM("left");
+	grfLeftIndexes = generateIndexes(grfLeftLabels,input2_labels);
+	ROS_INFO_STREAM("right");
+	grfRightIndexes = generateIndexes(grfRightLabels, input2_labels);
+
 }
 
-ExternalWrench::Input Pipeline::Id::parse_message(const opensimrt_msgs::CommonTimedConstPtr & msg_grf, std::vector<std::string> grfLabels)
+
+boost::array<int,9> Pipeline::Id::generateIndexes(std::vector<std::string> pick, std::vector<std::string> whole) // point,force, torque
 {
-	ExternalWrench::Input a;
-	
-	cout << "grflabels: ";
-	for (auto label:grfLabels)
+	boost::array<int,9> grfIndexes;
+	for (int i= 0; i<9 ; i++)
 	{
-		//point, force, torque
-
-		cout << label << " ";
-
-	}
-	cout << endl;
-
-	cout << "input2_labels: ";
-	for (auto message_label:input2_labels)
+		//im assuming this is in order. if it isnt this will break
+		int j = 0;
+		for (auto label:whole)
 		{
-			cout << message_label << " ";
-
+			if(label.compare(pick[i])==0)
+			{
+				// the pick_label and the label are the same, so the index i is what we want
+				grfIndexes[i] = j; 
+			}
+			j++;
 		}
-	cout << endl;
+	}
+	for (auto ind: grfIndexes)
+		ROS_WARN_STREAM(ind);
+
+	return grfIndexes;
+}
+
+
+ExternalWrench::Input Pipeline::Id::parse_message(const opensimrt_msgs::CommonTimedConstPtr & msg_grf, boost::array<int,9> grfIndexes)
+{
+	ROS_INFO_STREAM("Parsing wrench from message");
+	ExternalWrench::Input a;
+	for (auto ind:grfIndexes)
+		ROS_INFO_STREAM("index:" << ind);
+	a.point  = SimTK::Vec3(msg_grf->data[grfIndexes[0]],msg_grf->data[grfIndexes[1]],msg_grf->data[grfIndexes[2]]);
+	a.force  = SimTK::Vec3(msg_grf->data[grfIndexes[3]],msg_grf->data[grfIndexes[4]],msg_grf->data[grfIndexes[5]]);
+	a.torque = SimTK::Vec3(msg_grf->data[grfIndexes[6]],msg_grf->data[grfIndexes[7]],msg_grf->data[grfIndexes[8]]);
+
+	ROS_INFO_STREAM("wrench i got:");
+	print_wrench(a);
+
 	return a;
 }
 void Pipeline::Id::callback0(const opensimrt_msgs::CommonTimedConstPtr& message_ik) {
@@ -208,6 +232,16 @@ void Pipeline::Id::callback0(const opensimrt_msgs::CommonTimedConstPtr& message_
 void Pipeline::Id::callback1(const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
 	ROS_INFO_STREAM("callback grf called");
 }
+
+void Pipeline::Id::print_wrench(ExternalWrench::Input w)
+{
+	ROS_INFO_STREAM("POINT" << w.point[0] << ","<< w.point[1] << "," << w.point[2] );
+	ROS_INFO_STREAM("FORCE" << w.force[0] << ","<< w.force[1] << "," << w.force[2] );
+	ROS_INFO_STREAM("TORQUE" << w.torque[0] << ","<< w.torque[1] << "," << w.torque[2] );
+
+
+}
+
 
 void Pipeline::Id::callback(const opensimrt_msgs::CommonTimedConstPtr& message_ik, const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
 //void Pipeline::Id::operator() (const opensimrt_msgs::CommonTimedConstPtr& message) {
@@ -291,12 +325,15 @@ void Pipeline::Id::callback(const opensimrt_msgs::CommonTimedConstPtr& message_i
 					       grfmOutput.left.force,
 					       grfmOutput.left.torque};
 	*/
-	cout << "right wrench.";
-	ExternalWrench::Input grfRightWrench = parse_message(message_grf, grfRightLabels);
-	cout << "left wrench.";
-	ExternalWrench::Input grfLeftWrench = parse_message(message_grf, grfLeftLabels);
-
-	return;
+	//cout << "right wrench.";
+	ExternalWrench::Input grfRightWrench = parse_message(message_grf, grfRightIndexes);
+	//cout << "left wrench.";
+	ROS_INFO_STREAM("rw");
+	print_wrench(grfRightWrench);
+	ExternalWrench::Input grfLeftWrench = parse_message(message_grf, grfLeftIndexes);
+	ROS_INFO_STREAM("lw");
+	print_wrench(grfLeftWrench);
+//	return;
 
 
 

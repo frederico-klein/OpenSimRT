@@ -47,6 +47,10 @@ namespace Pipeline
 			OpenSimRT::BasicModelVisualizer* visualizer;
 			OpenSimRT::LowPassSmoothFilter* ikfilter, *grfRightFilter, *grfLeftFilter;
 			std::vector<std::string> grfRightLabels, grfLeftLabels;
+			
+			boost::array<int,9> generateIndexes(std::vector<std::string> pick, std::vector<std::string> whole); 
+			boost::array<int,9> grfLeftIndexes, grfRightIndexes;
+			void print_wrench(OpenSimRT::ExternalWrench::Input w);
 
 			//do I need this?
 			int counter;
@@ -57,7 +61,7 @@ namespace Pipeline
 			bool see(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 
 			void write_();
-			OpenSimRT::ExternalWrench::Input parse_message(const opensimrt_msgs::CommonTimedConstPtr& msg_grf, std::vector<std::string> grfLabels);
+			OpenSimRT::ExternalWrench::Input parse_message(const opensimrt_msgs::CommonTimedConstPtr& msg_grf, boost::array<int,9> grfIndexes);
 	};
 
 }
