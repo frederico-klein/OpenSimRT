@@ -4,6 +4,8 @@ Ros wrapper interface for the [OpenSimRT](https://github.com/mitkof6/OpenSimRT) 
 
 This package is transitional, not recommended for use and it is planned to use OpenSimRT as a dependency to allow independent development.
 
+You should start with the docker https://github.com/frederico-klein/docker-opensimrt
+
 You probably also want:
 
 - https://github.com/mysablehats/opensimrt_bridge
