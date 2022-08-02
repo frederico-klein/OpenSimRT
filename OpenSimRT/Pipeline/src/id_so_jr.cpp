@@ -21,7 +21,7 @@
 #include "ros/service_server.h"
 #include "signal.h"
 #include "std_srvs/Empty.h"
-#include "Pipeline/include/id.h"
+#include "Pipeline/include/id_so_jr.h"
 
 using namespace std;
 using namespace OpenSim;
