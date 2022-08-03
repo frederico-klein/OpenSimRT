@@ -1,4 +1,4 @@
-#ifndef PIPELINE_ID_SO_JR_HEADER_FBK_21072022
+ifndef PIPELINE_ID_SO_JR_HEADER_FBK_21072022
 #define PIPELINE_ID_SO_JR_HEADER_FBK_21072022
 
 #include "InverseDynamics.h"
@@ -47,6 +47,10 @@ namespace Pipeline
 			OpenSimRT::BasicModelVisualizer* visualizer;
 			OpenSimRT::LowPassSmoothFilter* ikfilter, *grfRightFilter, *grfLeftFilter;
 			std::vector<std::string> grfRightLabels, grfLeftLabels;
+
+			boost::array<int,9> generateIndexes(std::vector<std::string> pick, std::vector<std::string> whole); 
+			boost::array<int,9> grfLeftIndexes, grfRightIndexes;
+			void print_wrench(OpenSimRT::ExternalWrench::Input w);
 
 			//do I need this?
 			int counter;
