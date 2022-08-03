@@ -28,7 +28,7 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace OpenSimRT;
 
-Pipeline::Id_So_Jr::Id_So_Jr()
+Pipeline::IdSoJr::IdSoJr()
 {
     
 	// subject data
@@ -154,28 +154,28 @@ Pipeline::Id_So_Jr::Id_So_Jr()
     counter = 0;
 }
 
-Pipeline::Id_So_Jr::~Id_So_Jr()
+Pipeline::IdSoJr::~IdSoJr()
 {
 	ROS_INFO_STREAM("Shutting down Id");
 }
 
-void Pipeline::Id_So_Jr::onInit() {
+void Pipeline::IdSoJr::onInit() {
 	Pipeline::DualSink::onInit();
 	
 	previousTime = ros::Time::now().toSec();
 	previousTimeDifference = 0;
 			message_filters::Subscriber<opensimrt_msgs::CommonTimed> sub0;
-			sub0.registerCallback(&Pipeline::Id_So_Jr::callback0,this);
+			sub0.registerCallback(&Pipeline::IdSoJr::callback0,this);
 			message_filters::Subscriber<opensimrt_msgs::CommonTimed> sub1;
-			sub1.registerCallback(&Pipeline::Id_So_Jr::callback1,this);
+			sub1.registerCallback(&Pipeline::IdSoJr::callback1,this);
 	
 	// when i am running this it is already initialized, so i have to add the loggers to the list I want to save afterwards
 	initializeLoggers("grfRight",grfRightLogger);
 	initializeLoggers("grfLeft", grfLeftLogger);
 	initializeLoggers("tau",tauLogger);
 	message_filters::TimeSynchronizer<opensimrt_msgs::CommonTimed, opensimrt_msgs::CommonTimed> sync(sub, sub2, 500);
-	sync.registerCallback(std::bind(&Pipeline::Id_So_Jr::callback, this, std::placeholders::_1, std::placeholders::_2));
-	//sync.registerCallback(&Pipeline::Id_So_Jr::callback, this);
+	sync.registerCallback(std::bind(&Pipeline::IdSoJr::callback, this, std::placeholders::_1, std::placeholders::_2));
+	//sync.registerCallback(&Pipeline::IdSoJr::callback, this);
 
 	//i should have the input labels from grf already
 	
@@ -187,7 +187,7 @@ void Pipeline::Id_So_Jr::onInit() {
 }
 
 
-boost::array<int,9> Pipeline::Id_So_Jr::generateIndexes(std::vector<std::string> pick, std::vector<std::string> whole) // point,force, torque
+boost::array<int,9> Pipeline::IdSoJr::generateIndexes(std::vector<std::string> pick, std::vector<std::string> whole) // point,force, torque
 {
 	boost::array<int,9> grfIndexes;
 	for (int i= 0; i<9 ; i++)
@@ -211,7 +211,7 @@ boost::array<int,9> Pipeline::Id_So_Jr::generateIndexes(std::vector<std::string>
 }
 
 
-ExternalWrench::Input Pipeline::Id_So_Jr::parse_message(const opensimrt_msgs::CommonTimedConstPtr & msg_grf, boost::array<int,9> grfIndexes)
+ExternalWrench::Input Pipeline::IdSoJr::parse_message(const opensimrt_msgs::CommonTimedConstPtr & msg_grf, boost::array<int,9> grfIndexes)
 {
 	ROS_INFO_STREAM("Parsing wrench from message");
 	ExternalWrench::Input a;
@@ -226,14 +226,14 @@ ExternalWrench::Input Pipeline::Id_So_Jr::parse_message(const opensimrt_msgs::Co
 
 	return a;
 }
-void Pipeline::Id_So_Jr::callback0(const opensimrt_msgs::CommonTimedConstPtr& message_ik) {
+void Pipeline::IdSoJr::callback0(const opensimrt_msgs::CommonTimedConstPtr& message_ik) {
 	ROS_INFO_STREAM("callback ik called");
 }
-void Pipeline::Id_So_Jr::callback1(const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
+void Pipeline::IdSoJr::callback1(const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
 	ROS_INFO_STREAM("callback grf called");
 }
 
-void Pipeline::Id_So_Jr::print_wrench(ExternalWrench::Input w)
+void Pipeline::IdSoJr::print_wrench(ExternalWrench::Input w)
 {
 	ROS_INFO_STREAM("POINT" << w.point[0] << ","<< w.point[1] << "," << w.point[2] );
 	ROS_INFO_STREAM("FORCE" << w.force[0] << ","<< w.force[1] << "," << w.force[2] );
@@ -243,8 +243,8 @@ void Pipeline::Id_So_Jr::print_wrench(ExternalWrench::Input w)
 }
 
 
-void Pipeline::Id_So_Jr::callback(const opensimrt_msgs::CommonTimedConstPtr& message_ik, const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
-//void Pipeline::Id_So_Jr::operator() (const opensimrt_msgs::CommonTimedConstPtr& message) {
+void Pipeline::IdSoJr::callback(const opensimrt_msgs::CommonTimedConstPtr& message_ik, const opensimrt_msgs::CommonTimedConstPtr& message_grf) {
+//void Pipeline::IdSoJr::operator() (const opensimrt_msgs::CommonTimedConstPtr& message) {
 // repeat the simulation `simulationLoops` times
 	ROS_ERROR_STREAM("Received message. Running Id loop"); 
 	counter++;
@@ -421,7 +421,7 @@ void Pipeline::Id_So_Jr::callback(const opensimrt_msgs::CommonTimedConstPtr& mes
 	//	write_();
 	//}
 }	
-void Pipeline::Id_So_Jr::finish() {
+void Pipeline::IdSoJr::finish() {
 
     cout << "Mean delay: " << (double) sumDelayMS / sumDelayMSCounter << " ms"
          << endl;
@@ -460,7 +460,7 @@ void Pipeline::Id_So_Jr::finish() {
             TimeSeriesTable(subjectDir +
                             "real_time/inverse_dynamics/qDDot_filtered.sto"));
 }
-bool Pipeline::Id_So_Jr::see(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+bool Pipeline::IdSoJr::see(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 	std::stringstream ss;
 	//vector<string> data = grfRightLogger.getTableMetaData().getKeys();
@@ -470,7 +470,7 @@ bool Pipeline::Id_So_Jr::see(std_srvs::Empty::Request &req, std_srvs::Empty::Res
 	ROS_INFO_STREAM("grfRightLogger columns:" << ss.str());
 	return true;
 }
-void Pipeline::Id_So_Jr::write_() {
+void Pipeline::IdSoJr::write_() {
 //			std::stringstream ss;
 	//vector<string> data = grfRightLogger.getTableMetaData().getKeys();
 	//ss << "Data Retrieved: \n";
