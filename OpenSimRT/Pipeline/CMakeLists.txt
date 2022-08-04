@@ -11,6 +11,7 @@ file(
   applications/agrf.cpp
   applications/cgrf.cpp
   applications/id_pipeline.cpp
+  applications/id_combined.cpp
 )
 
 # file(GLOB tests tests/*.cpp)
