@@ -8,7 +8,7 @@
 #include "opensimrt_msgs/CommonTimed.h"
 #include "std_srvs/Empty.h"
 #include <Common/TimeSeriesTable.h>
-
+#include "MuscleOptimization.h"
 namespace Pipeline
 {
 
@@ -27,6 +27,15 @@ namespace Pipeline
 			void onInitSo();
 			void onInitJr();
 			void finish();
+			//SO portion:
+			OpenSimRT::MuscleOptimization* so;
+			OpenSimRT::MuscleOptimization::OptimizationParameters optimizationParameters;
+			OpenSim::Model* model;
+			OpenSimRT::BasicModelVisualizer* visualizer;
+			OpenSimRT::MomentArmFunctionT calcMomentArm; 
+			OpenSim::TimeSeriesTable fmLogger;
+			OpenSim::TimeSeriesTable amLogger;
+
 	};
 
 }

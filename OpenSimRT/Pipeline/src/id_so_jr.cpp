@@ -15,6 +15,7 @@
 #include "signal.h"
 #include "std_srvs/Empty.h"
 #include "Pipeline/include/id_so_jr.h"
+#include "MuscleOptimization.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -32,7 +33,92 @@ Pipeline::IdSoJr::IdSoJr() // : Pipeline::Id() //this is done automatically I th
 
 void Pipeline::IdSoJr::So()
 {
-	ROS_DEBUG_STREAM("fake constructor of SO");
+    ROS_DEBUG_STREAM("fake constructor of SO");
+    cout << "Warning" << endl
+         << "This test might fail on different machines. "
+         << "The performance of the optimization depends on the underlying OS. "
+         << "We think it has to do with how threads are scheduled by the OS. "
+         << "We did not observed this behavior with OpenSim v3.3." << endl
+         << endl;
+
+    // subject data
+    INIReader ini(INI_FILE);
+    auto section = "TEST_SO_FROM_FILE";
+    auto subjectDir = DATA_DIR + ini.getString(section, "SUBJECT_DIR", "");
+    auto modelFile = subjectDir + ini.getString(section, "MODEL_FILE", "");
+    //auto ikFile = subjectDir + ini.getString(section, "IK_FILE", "");
+    //auto idFile = subjectDir + ini.getString(section, "ID_FILE", "");
+
+    // Windows places executables in different folders. When ctest is
+    // called on a Linux machine it runs the test from different
+    // folders and thus the dynamic library might not be found
+    // properly.
+//#ifndef WIN32
+    auto momentArmLibraryPath =
+            LIBRARY_OUTPUT_PATH + "/" +
+            ini.getString(section, "MOMENT_ARM_LIBRARY", "");
+    ROS_DEBUG_STREAM("momentArmLibraryPath:" << momentArmLibraryPath);
+/*#else
+    auto momentArmLibraryPath =
+            ini.getString(section, "MOMENT_ARM_LIBRARY", "");
+#endif*/
+
+    //auto memory = ini.getInteger(section, "MEMORY", 0);
+    //auto cutoffFreq = ini.getReal(section, "CUTOFF_FREQ", 0);
+    //auto delay = ini.getInteger(section, "DELAY", 0);
+    //auto splineOrder = ini.getInteger(section, "SPLINE_ORDER", 0);
+
+    auto convergenceTolerance =
+            ini.getReal(section, "CONVERGENCE_TOLERANCE", 0);
+    auto memoryHistory = ini.getReal(section, "MEMORY_HISTORY", 0);
+    auto maximumIterations = ini.getInteger(section, "MAXIMUM_ITERATIONS", 0);
+    auto objectiveExponent = ini.getInteger(section, "OBJECTIVE_EXPONENT", 0);
+
+    Object::RegisterType(Thelen2003Muscle());
+    model = new Model(modelFile);
+    model->initSystem();
+ 
+    ROS_DEBUG_STREAM("registered model okay.");
+    // load and verify moment arm function
+    auto calcMomentArmTemp = OpenSimUtils::getMomentArmFromDynamicLibrary(
+            *model, momentArmLibraryPath);
+    ROS_DEBUG_STREAM("initialized calcMomentArmTemp from dynamic library ok.");
+
+    calcMomentArm = calcMomentArmTemp;
+
+    ROS_DEBUG_STREAM("initialized MomentArm from dynamic library ok.");
+    // get kinematics as a table with ordered coordinates
+    //auto qTable = OpenSimUtils::getMultibodyTreeOrderedCoordinatesFromStorage(
+    //        model, ikFile, 0.01);
+
+    // read external forces
+    //auto tauTable = OpenSimUtils::getMultibodyTreeOrderedCoordinatesFromStorage(
+    //        model, idFile, 0.01);
+
+    /*if (tauTable.getNumRows() != qTable.getNumRows()) {
+        THROW_EXCEPTION("ik and id storages of different size " +
+                        toString(qTable.getNumRows()) +
+                        " != " + toString(tauTable.getNumRows()));
+    }*/
+
+    // initialize so
+//    MuscleOptimization::OptimizationParameters optimizationParameters;
+    optimizationParameters.convergenceTolerance = convergenceTolerance;
+    optimizationParameters.memoryHistory = memoryHistory;
+    optimizationParameters.maximumIterations = maximumIterations;
+    optimizationParameters.objectiveExponent = objectiveExponent;
+    ROS_DEBUG_STREAM("set parameter for optimizer okay.");
+    // auto tauResLogger = so.initializeResidualLogger();
+    // visualizer
+    //BasicModelVisualizer visualizer(model);
+    visualizer = new BasicModelVisualizer(*model);
+    // mean delay
+    //int sumDelayMS = 0;
+
+    so = new MuscleOptimization(*model, optimizationParameters, calcMomentArm);
+    ROS_DEBUG_STREAM("initialized MuscleOptimization okay.");
+    //so = &so_temp;
+    ROS_DEBUG_STREAM("SO fake constructor ran ok.");
 }
 void Pipeline::IdSoJr::Jr()
 {
@@ -40,7 +126,7 @@ void Pipeline::IdSoJr::Jr()
 }
 Pipeline::IdSoJr::~IdSoJr()
 {
-	ROS_INFO_STREAM("Shutting down Id");
+	ROS_INFO_STREAM("Shutting down Id_So_Jr");
 }
 
 void Pipeline::IdSoJr::onInit() {
@@ -53,6 +139,9 @@ void Pipeline::IdSoJr::onInit() {
 void Pipeline::IdSoJr::onInitSo()
 {
 	ROS_DEBUG_STREAM("onInitSo");
+    //these need to be shared with the rest:
+    fmLogger = so->initializeMuscleLogger();
+    amLogger = so->initializeMuscleLogger();
 }
 
 void Pipeline::IdSoJr::onInitJr()
@@ -146,11 +235,11 @@ void Pipeline::IdSoJr::callback(const opensimrt_msgs::CommonTimedConstPtr& messa
 	//cout << "right wrench.";
 	ExternalWrench::Input grfRightWrench = parse_message(message_grf, grfRightIndexes);
 	//cout << "left wrench.";
-	ROS_INFO_STREAM("rw");
-	print_wrench(grfRightWrench);
+	//ROS_INFO_STREAM("rw");
+	//print_wrench(grfRightWrench);
 	ExternalWrench::Input grfLeftWrench = parse_message(message_grf, grfLeftIndexes);
-	ROS_INFO_STREAM("lw");
-	print_wrench(grfLeftWrench);
+	//ROS_INFO_STREAM("lw");
+	//print_wrench(grfLeftWrench);
 //	return;
 
 
@@ -202,12 +291,39 @@ void Pipeline::IdSoJr::callback(const opensimrt_msgs::CommonTimedConstPtr& messa
 
 	ROS_DEBUG_STREAM("inverse dynamics ran ok");
 
+	//so part
+	//
+	// I think that tau is ~idOutput.tau
+	auto tau = idOutput.tau;
+	for (auto somehting:tau)
+	{
+		cout << somehting << ";;";	
+	}
+	cout << endl;
+        auto soOutput = so->solve({t, q, tau});
+
+        /*chrono::high_resolution_clock::time_point t2;
+        t2 = chrono::high_resolution_clock::now();
+        sumDelayMS +=
+                chrono::duration_cast<chrono::milliseconds>(t2 - t1).count();
+*/
+        // visualization
+	// so loggers
+	
+	//jr part
+	//
+	//
+	//
+	//
+	cout << soOutput.am << endl;
+	cout << "two equal numbers:" << soOutput.am.size() << " " << model->getMuscles().getSize() << endl;
 	// visualization
 	try {
-	visualizer->update(q);
-	rightGRFDecorator->update(grfRightWrench.point,
+        visualizer->update(q, soOutput.am);
+	//visualizer->update(q);
+	/*rightGRFDecorator->update(grfRightWrench.point,
 				  grfRightWrench.force);
-	leftGRFDecorator->update(grfLeftWrench.point, grfLeftWrench.force);
+	leftGRFDecorator->update(grfLeftWrench.point, grfLeftWrench.force);*/
 		ROS_DEBUG_STREAM("visualizer ran ok.");
 	}
 	catch (std::exception& e)
@@ -228,6 +344,11 @@ void Pipeline::IdSoJr::callback(const opensimrt_msgs::CommonTimedConstPtr& messa
 		qLogger->appendRow(ikFiltered.t, ~q);
 		qDotLogger->appendRow(ikFiltered.t, ~qDot);
 		qDDotLogger->appendRow(ikFiltered.t, ~qDDot);
+        	
+	// loggers from SO
+		// log data (use filter time to align with delay)
+        	fmLogger.appendRow(t, ~soOutput.fm);
+        	amLogger.appendRow(t, ~soOutput.am);
 
 		ROS_INFO_STREAM("Added data to loggers. "<< counter);
 	}}
