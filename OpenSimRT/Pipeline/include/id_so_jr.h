@@ -19,6 +19,7 @@ namespace Pipeline
 			~IdSoJr();
 			// now since I have 2 sinks I will need message_filters
 			void callback(const opensimrt_msgs::CommonTimedConstPtr& message_ik, const opensimrt_msgs::CommonTimedConstPtr& message_grf); //ik, grf are received at the same time
+			void old_callback(const opensimrt_msgs::CommonTimedConstPtr& message_ik, const opensimrt_msgs::CommonTimedConstPtr& message_grf); //ik, grf are received at the same time
 
 			void So();
 			void Jr();
@@ -35,6 +36,7 @@ namespace Pipeline
 			OpenSimRT::MomentArmFunctionT calcMomentArm; 
 			OpenSim::TimeSeriesTable fmLogger;
 			OpenSim::TimeSeriesTable amLogger;
+			virtual bool usesVisualizarFromId() {return false;}
 
 	};
 

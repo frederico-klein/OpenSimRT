@@ -72,9 +72,9 @@ Pipeline::Id::Id()
 
     // setup model
     Object::RegisterType(Thelen2003Muscle());
-    Model model(modelFile);
-    OpenSimUtils::removeActuators(model);
-    model.initSystem();
+    model = new Model(modelFile);
+    OpenSimUtils::removeActuators(*model);
+    model->initSystem();
 
     // setup external forces
     //Storage grfMotion(grfMotFile);
@@ -106,7 +106,7 @@ Pipeline::Id::Id()
 
     // setup filters
     LowPassSmoothFilter::Parameters ikFilterParam;
-    ikFilterParam.numSignals = model.getNumCoordinates();
+    ikFilterParam.numSignals = model->getNumCoordinates();
     ikFilterParam.memory = memory;
     ikFilterParam.delay = delay;
     ikFilterParam.cutoffFrequency = cutoffFreq;
@@ -130,7 +130,7 @@ Pipeline::Id::Id()
     // cutoffFreq});
 
     // initialize id and logger
-    id = new InverseDynamics(model, wrenchParameters);
+    id = new InverseDynamics(*model, wrenchParameters);
     auto tauLoggerTemp = id->initializeLogger();
     tauLogger = &tauLoggerTemp;
     auto qLoggerTemp = id->initializeLogger();
@@ -139,13 +139,6 @@ Pipeline::Id::Id()
     qDotLogger = &qDotLoggerTemp;
     auto qDDotLoggerTemp = id->initializeLogger();
     qDDotLogger = &qDDotLoggerTemp;
-
-    // visualizer
-    visualizer = new BasicModelVisualizer(model);
-    rightGRFDecorator = new ForceDecorator(Green, 0.001, 3);
-    visualizer->addDecorationGenerator(rightGRFDecorator);
-    leftGRFDecorator = new ForceDecorator(Green, 0.001, 3);
-    visualizer->addDecorationGenerator(leftGRFDecorator);
 
     // mean delay
     sumDelayMS = 0;
@@ -183,6 +176,16 @@ void Pipeline::Id::onInit() {
 	grfLeftIndexes = generateIndexes(grfLeftLabels,input2_labels);
 	ROS_INFO_STREAM("right");
 	grfRightIndexes = generateIndexes(grfRightLabels, input2_labels);
+    // visualizer
+    if (usesVisualizarFromId())
+    {
+	    ROS_WARN_STREAM("CREATING VISUALIZER FROM ID!");
+	    visualizer = new BasicModelVisualizer(*model);
+	    rightGRFDecorator = new ForceDecorator(Green, 0.001, 3);
+	    visualizer->addDecorationGenerator(rightGRFDecorator);
+	    leftGRFDecorator = new ForceDecorator(Green, 0.001, 3);
+	    visualizer->addDecorationGenerator(leftGRFDecorator);
+    }
 
 }
 
@@ -213,16 +216,16 @@ boost::array<int,9> Pipeline::Id::generateIndexes(std::vector<std::string> pick,
 
 ExternalWrench::Input Pipeline::Id::parse_message(const opensimrt_msgs::CommonTimedConstPtr & msg_grf, boost::array<int,9> grfIndexes)
 {
-	ROS_INFO_STREAM("Parsing wrench from message");
+	//ROS_DEBUG_STREAM("Parsing wrench from message");
 	ExternalWrench::Input a;
-	for (auto ind:grfIndexes)
-		ROS_INFO_STREAM("index:" << ind);
+	//for (auto ind:grfIndexes)
+	//	ROS_INFO_STREAM("index:" << ind);
 	a.point  = SimTK::Vec3(msg_grf->data[grfIndexes[0]],msg_grf->data[grfIndexes[1]],msg_grf->data[grfIndexes[2]]);
 	a.force  = SimTK::Vec3(msg_grf->data[grfIndexes[3]],msg_grf->data[grfIndexes[4]],msg_grf->data[grfIndexes[5]]);
 	a.torque = SimTK::Vec3(msg_grf->data[grfIndexes[6]],msg_grf->data[grfIndexes[7]],msg_grf->data[grfIndexes[8]]);
 
-	ROS_INFO_STREAM("wrench i got:");
-	print_wrench(a);
+	//ROS_DEBUG_STREAM("wrench i got:");
+	//print_wrench(a);
 
 	return a;
 }

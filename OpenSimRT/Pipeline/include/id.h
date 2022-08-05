@@ -44,6 +44,7 @@ namespace Pipeline
 			OpenSimRT::InverseDynamics* id;
 			OpenSimRT::ForceDecorator* rightGRFDecorator;
 			OpenSimRT::ForceDecorator* leftGRFDecorator;
+			OpenSim::Model* model;
 			OpenSimRT::BasicModelVisualizer* visualizer;
 			OpenSimRT::LowPassSmoothFilter* ikfilter, *grfRightFilter, *grfLeftFilter;
 			std::vector<std::string> grfRightLabels, grfLeftLabels;
@@ -62,6 +63,7 @@ namespace Pipeline
 
 			void write_();
 			OpenSimRT::ExternalWrench::Input parse_message(const opensimrt_msgs::CommonTimedConstPtr& msg_grf, boost::array<int,9> grfIndexes);
+			virtual bool usesVisualizarFromId() { return true;}
 	};
 
 }
