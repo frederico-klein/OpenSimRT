@@ -43,6 +43,11 @@ UIMUInputDriver::UIMUInputDriver(const int port,
 	ROS_WARN("IMU names are hardcoded!!! This needs to be solved or saving the TimeSeriesTable as CSV will be wrong!");
 
         }
+UIMUInputDriver::UIMUInputDriver(std::vector<std::string> imuObservationOrder, const double& sendRate)
+        : terminationFlag(false), rate(sendRate) {
+        imu_names = imuObservationOrder;
+	server = new TfServer(imu_names);	
+        }
 
         // i maybe want to start the server!
 

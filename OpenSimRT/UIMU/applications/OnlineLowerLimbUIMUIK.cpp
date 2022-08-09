@@ -23,7 +23,16 @@
  *
  * @author Filip Konstantinos <filip.k@ece.upatras.gr>
  */
+#include "TfServer.h"
 #include "ros/ros.h"
+#include "std_msgs/String.h"
+#include "geometry_msgs/PoseStamped.h"
+
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+#include "TfServer.h"
 #include "opensimrt_msgs/CommonTimed.h"
 #include "opensimrt_msgs/Labels.h"
 #include "std_msgs/Header.h"
@@ -40,7 +49,6 @@
 #include <Common/TimeSeriesTable.h>
 //#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
-#include <signal.h> // only for debug. should be removed if it doesnt help
 
 using namespace std;
 using namespace OpenSim;
@@ -48,7 +56,6 @@ using namespace OpenSimRT;
 using namespace SimTK;
 
 void run() {
-	signal(SIGPIPE,SIG_IGN); // I think I only need this to debug. remove if it doesn't change anythign
     INIReader ini(INI_FILE);
     auto section = "LOWER_LIMB_NGIMU_OFFLINE";
 
@@ -67,8 +74,8 @@ void run() {
     // subject data
     auto subjectDir = DATA_DIR + ini.getString(section, "SUBJECT_DIR", "");
     auto modelFile = subjectDir + ini.getString(section, "MODEL_FILE", "");
-    auto ngimuDataFile =
-            subjectDir + ini.getString(section, "NGIMU_DATA_CSV", "");
+    //auto ngimuDataFile =
+    //        subjectDir + ini.getString(section, "NGIMU_DATA_CSV", "");
 
     // setup model
     Object::RegisterType(Thelen2003Muscle());
@@ -84,8 +91,13 @@ void run() {
     //UIMUInputDriver driver(ngimuDataFile, rate);
     //this is now a ROS thing, so we need to set it up as a ros node 
     ros::NodeHandle n;
-    UIMUInputDriver driver(8080, rate); //cometa server
+    UIMUInputDriver driver(imuObservationOrder, rate); //tf server
+    //TfServer* srv = dynamic_cast<TfServer*>(driver.server);
+    //srv->set_tfs(imuObservationOrder);
+	//srv->set_tfs({"ximu3","ximu3", "ximu3"});
     driver.startListening();
+    auto imuLogger = driver.initializeLogger();
+    
     ros::Publisher re_pub = n.advertise<opensimrt_msgs::CommonTimed>("r_data", 1000);
     ros::Publisher labels_pub = n.advertise<opensimrt_msgs::Labels>("r_labels", 1000, true); //latching topic
     //TODO: publish labels
@@ -103,21 +115,8 @@ void run() {
     auto qLogger = ik.initializeLogger();
 
     // visualizer
-    /*bool VISUALIZATION = false;
-    if (VISUALIZATION)
-    {
-	    BasicModelVisualizer visualizer(model);
+    BasicModelVisualizer visualizer(model);
     
-	    SimTK::Vector zv; //zero vector
-	    std::istringstream is("0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 ");
-	    is >> zv;
-
-	    cout << "Attempt at showing." << endl;
-	    visualizer.update(zv);
-	    cout << "Showing successful." << endl;
-	    cout << "zero vector: " << zv << endl;
-    }
-	*/
     // mean delay
     int sumDelayMS = 0;
     int numFrames = 0;
@@ -125,6 +124,9 @@ void run() {
     double previousTime = 0;
     double previousDt = 0;
     
+    static tf::TransformBroadcaster br;
+    static tf::TransformListener listener;
+
     try { // main loop
         while (!(driver.shouldTerminate())) {
             // get input from sensors
@@ -174,15 +176,14 @@ void run() {
 	    re_pub.publish(msg);
 
 	    //Visualization
-            /*if(VISUALIZATION)
-	    {
-		    visualizer.update(pose.q);
-	    	    std::cout << "Visualization successful." << std::endl;
-	    }*/
+	    visualizer.update(pose.q);
             // record
+            imuLogger.appendRow(pose.t, driver.frame);//
             qLogger.appendRow(pose.t, ~pose.q);
 	    previousTime = pose.t;
 	    previousDt = Dt;
+	    if(!ros::ok())
+		    break;
         }
     } catch (std::exception& e) {
         cout << "Crashed while executing main loop. " << e.what() << endl;
@@ -193,6 +194,7 @@ void run() {
     cout << "Mean delay: " << (double) sumDelayMS / numFrames << " ms" << endl;
     
     CSVFileAdapter::write( qLogger, "test_lower.csv");
+    CSVFileAdapter::write( imuLogger, "test_lower_imus.csv");
     // // store results
     // STOFileAdapter::write(
     //         qLogger, subjectDir + "real_time/inverse_kinematics/q_imu.sto");

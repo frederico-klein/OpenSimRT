@@ -70,8 +70,8 @@ void run() {
     // subject data
     auto subjectDir = DATA_DIR + ini.getString(section, "SUBJECT_DIR", "");
     auto modelFile = subjectDir + ini.getString(section, "MODEL_FILE", "");
-    auto ngimuDataFile =
-            subjectDir + ini.getString(section, "NGIMU_DATA_CSV", "");
+    //auto ngimuDataFile =
+    //        subjectDir + ini.getString(section, "NGIMU_DATA_CSV", "");
 
     // setup model
     Object::RegisterType(Schutte1993Muscle_Deprecated());
@@ -145,6 +145,8 @@ void run() {
             // record
             imuLogger.appendRow(pose.t, driver.frame);//
             qLogger.appendRow(pose.t, ~pose.q);
+	    if(!ros::ok())
+		    break;
         }
     } catch (std::exception& e) {
         cout << e.what() << endl;

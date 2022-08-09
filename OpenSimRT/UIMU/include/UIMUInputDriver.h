@@ -46,6 +46,7 @@ class  UIMUInputDriver : public InputDriver<UIMUData> {
     UIMUInputDriver(const double& sendRate = 50);
     UIMUInputDriver(const int port,
                              const double& sendRate);
+    UIMUInputDriver(const std::vector<std::string> imuObservationOrder,const double& sendRate = 50);
     ~UIMUInputDriver(); // dtor
 
     /**
