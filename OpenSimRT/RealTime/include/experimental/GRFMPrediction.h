@@ -32,6 +32,7 @@
 #include "internal/RealTimeExports.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon.h>
+#include "GRFMNonSmooth.h"
 
 namespace OpenSimRT {
 
@@ -59,7 +60,8 @@ class RealTime_API GaitPhaseState {
  * is estimated assuming a smooth transition between two specified station
  * points in heel and toe.
  */
-class RealTime_API GRFMPrediction {
+class RealTime_API GRFMPrediction : public GRFMNonSmooth
+{
     /**
      * Funtion type used to describe the Smooth Transition Assumption fucntions.
      */
@@ -72,10 +74,6 @@ class RealTime_API GRFMPrediction {
             CoPTrajectory;
 
  public:
-    /**
-     * Select method for computing the total reactions loads.
-     */
-    enum class Method { NewtonEuler, InverseDynamics };
 
     struct Parameters {
         int directionWindowSize;
@@ -86,27 +84,8 @@ class RealTime_API GRFMPrediction {
         SimTK::Vec3 rToeStationLocation, lToeStationLocation;   // end of cop
     };
 
-    struct Input {
-        double t;
-        SimTK::Vector q;
-        SimTK::Vector qDot;
-        SimTK::Vector qDDot;
-    };
-
-    struct RealTime_API Output {
-        double t;
-        ExternalWrench::Input right, left;
-    };
-
     GRFMPrediction(const OpenSim::Model&, const Parameters&,
                    GaitPhaseDetector*); // ctor
-
-    /**
-     * Select the name of the method used to compute the total reaction loads
-     * F_ext and M_ext. Computation is performed using either the Newton-Euler
-     * equations of motion, or the by solving the Inverse-Dynamics (ID) method.
-     */
-    static Method selectMethod(const std::string& methodName);
 
     /**
      * Compute the ground reaction forces, moments and cop.
@@ -151,17 +130,9 @@ class RealTime_API GRFMPrediction {
     SimTK::Rotation computeGaitDirectionRotation(const std::string& bodyName);
 
     /**
-     * Compute the total reaction components F_ext and M_ext based either on the
-     * Newton-Euler method or by solving ID.
-     */
-    void computeTotalReactionComponents(const Input& input,
-                                        SimTK::Vec3& totalReactionForce,
-                                        SimTK::Vec3& totalReactionMoment);
-
-    /**
      * Separate the total reaction components into R/L foot reaction components.
      */
-    void seperateReactionComponents(
+    void separateReactionComponents(
             const double& time, const SimTK::Vec3& totalReactionComponent,
             const SimTK::Vec3& totalReactionAtThs,
             const TransitionFuction& anteriorComponentFunction,
