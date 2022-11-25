@@ -107,8 +107,6 @@ class RealTime_API GRFMPrediction : public GRFMNonSmooth
     // gait direction based on the average direction of the pelvis anterior axis
     SlidingWindow<SimTK::Vec3> gaitDirectionBuffer;
 
-    OpenSim::Model model;
-    SimTK::State state;
     Parameters parameters;
 
     // gait phase detection

@@ -31,9 +31,10 @@ using namespace SimTK;
 GRFMPrediction::GRFMPrediction(const Model& otherModel,
                                const Parameters& aParameters,
                                GaitPhaseDetector* detector)
-        : model(*otherModel.clone()), gaitPhaseDetector(detector),
-          parameters(aParameters), GRFMNonSmooth(otherModel, aParameters.pelvisBodyName)  {
-    // reserve memory size for computing the mean gait direction
+        :  GRFMNonSmooth(otherModel, aParameters.pelvisBodyName) , gaitPhaseDetector(detector),
+          parameters(aParameters) {
+    cout << "initializing GRFMPrediction" << endl;
+	// reserve memory size for computing the mean gait direction
     gaitDirectionBuffer.setSize(parameters.directionWindowSize);
 
     // add station points to the model for the CoP trajectory
@@ -88,6 +89,7 @@ GRFMPrediction::GRFMPrediction(const Model& otherModel,
         // scale the distance vector d (heel -> metatarsal)
         return scale * d;
     };
+    cout << "GRFMPrediction initialized ok" << endl;
 }
 
 SimTK::Rotation

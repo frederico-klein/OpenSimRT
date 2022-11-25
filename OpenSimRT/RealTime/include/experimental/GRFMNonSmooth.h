@@ -49,7 +49,7 @@ class RealTime_API GRFMNonSmooth {
     void computeTotalReactionComponents(const Input& input,
                                         SimTK::Vec3& totalReactionForce,
                                         SimTK::Vec3& totalReactionMoment);
- private:
+// private:
 
     OpenSim::Model model;
     SimTK::State state;

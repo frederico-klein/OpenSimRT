@@ -28,14 +28,15 @@ using namespace OpenSimRT;
 using namespace SimTK;
 
 GRFMNonSmooth::GRFMNonSmooth(const Model& otherModel, string pelvisBodyName)
-        : model(*otherModel.clone()), pelvisBodyName(pelvisBodyName) {
+        : model(otherModel), pelvisBodyName(pelvisBodyName) {
 
+	cout << model.getInputFileName() << endl;
     // disable muscles, otherwise they apply passive forces
     OpenSimUtils::disableActuators(model);
 
     // initialize system
-    state = model.initSystem();
-
+    //state = model.initSystem();
+    std::cout << "GRFMNonSmooth initialized ok." << std::endl;
 }
 
 GRFMNonSmooth::Method
@@ -129,6 +130,7 @@ void GRFMNonSmooth::computeTotalReactionComponents(const Input& input,
 
 GRFMNonSmooth::Output
 GRFMNonSmooth::solve(const GRFMNonSmooth::Input& input) {
+    cout << "NOT IMPLEMENTED ERROR" << endl;
     Output output;
     output.t = input.t;
     output.right.force = Vec3(0.0);
@@ -137,7 +139,6 @@ GRFMNonSmooth::solve(const GRFMNonSmooth::Input& input) {
     output.left.force = Vec3(0.0);
     output.left.torque = Vec3(0.0);
     output.left.point = Vec3(0.0);
-
     return output;
 }
 
