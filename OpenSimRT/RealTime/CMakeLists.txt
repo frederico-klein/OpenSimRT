@@ -13,6 +13,7 @@ file(GLOB tests
   tests/TestRTFromFile.cpp
   tests/experimental/TestAccelerationGRFMPredictionFromFile.cpp
   tests/experimental/TestContactForceGRFMPredictionFromFile.cpp
+  tests/experimental/TestInsoleGRFMPredictionFromFile.cpp
   tests/experimental/TestMarkerReconstruction.cpp
   tests/experimental/TestRTExtFromFile.cpp
   )

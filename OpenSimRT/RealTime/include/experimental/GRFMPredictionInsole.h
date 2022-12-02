@@ -17,7 +17,7 @@
  * OpenSimRT. If not, see <https://www.gnu.org/licenses/>.
  * -----------------------------------------------------------------------------
  *
- * @file GRFMPrediction.h
+ * @file GRFMPredictionInsole.h
  *
  * @brief Estimate the ground reaction forces, moments and cop during gait from
  * kinematic data.
@@ -51,7 +51,7 @@ class RealTime_API GaitPhaseDetector;
  * is estimated assuming a smooth transition between two specified station
  * points in heel and toe.
  */
-class RealTime_API GRFMPrediction : public GRFMNonSmooth
+class RealTime_API GRFMPredictionInsole : public GRFMNonSmooth
 {
     /**
      * Funtion type used to describe the Smooth Transition Assumption fucntions.
@@ -69,13 +69,15 @@ class RealTime_API GRFMPrediction : public GRFMNonSmooth
     struct Parameters {
         int directionWindowSize;
         Method method;                                  // Newton-Euler or ID
-        std::string pelvisBodyName;                     // pelvis body name
+       	std::string insoleDataFromFile; 
+	//TODO: Remove Unused params!!
+	std::string pelvisBodyName;                     // pelvis body name
         std::string rStationBodyName, lStationBodyName; // foot body names
         SimTK::Vec3 rHeelStationLocation, lHeelStationLocation; // begin of cop
         SimTK::Vec3 rToeStationLocation, lToeStationLocation;   // end of cop
     };
 
-    GRFMPrediction(const OpenSim::Model&, const Parameters&,
+    GRFMPredictionInsole(const OpenSim::Model&, const Parameters&,
                    GaitPhaseDetector*); // ctor
 
     /**
@@ -135,6 +137,8 @@ class RealTime_API GRFMPrediction : public GRFMNonSmooth
      */
     void computeReactionPoint(const double& t, SimTK::Vec3& rightPoint,
                               SimTK::Vec3& leftPoint);
+
+    void getInsoleMeasurements();
 };
 
 } // namespace OpenSimRT

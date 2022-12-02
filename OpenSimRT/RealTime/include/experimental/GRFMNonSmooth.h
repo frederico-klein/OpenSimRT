@@ -10,6 +10,16 @@
 
 namespace OpenSimRT {
 
+// Gait related states.
+class RealTime_API GaitPhaseState {
+ public:
+    enum class LegPhase { INVALID, SWING, STANCE };
+
+    enum class GaitPhase { INVALID, RIGHT_SWING, LEFT_SWING, DOUBLE_SUPPORT };
+
+    enum class LeadingLeg { INVALID, RIGHT, LEFT };
+};
+
 class RealTime_API GRFMNonSmooth {
 
  public:
