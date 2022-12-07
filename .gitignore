@@ -13,4 +13,4 @@ install/
 .vscode/
 /.cache/
 env.sh
-data/
+data
