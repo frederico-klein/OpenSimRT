@@ -55,6 +55,7 @@ void Ros::CommonNode::onInit(int num_sinks)
 			if(ros::service::call("in_labels", l))
 			{
 				input_labels = l.response.data;
+				ROS_INFO_STREAM("got response for labels: "<< input_labels.size() << " elements.");
 				input.set(input_labels);
 				break;
 			}
