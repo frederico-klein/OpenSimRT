@@ -59,6 +59,8 @@ namespace Ros
 			void saveStos();
 			void saveCsvs();
 			ros::ServiceServer write_csv, write_sto;
+			std::vector<int> deshuffle_input;
+			std::vector<std::string> desired_label_order;
 		protected:
 			ros::ServiceServer outLabelsSrv;
 			bool outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res );
@@ -66,8 +68,6 @@ namespace Ros
 			bool writeSto(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool published_labels_at_least_once=false;
 			void initializeLoggers(std::string logger_name, OpenSim::TimeSeriesTable *logger);
-			std::vector<int> deshuffle_input;
-			std::vector<std::string> desired_label_order;
 	};
 	template <typename T> std::vector<int> find_matches(std::vector<T> desired, std::vector<T> shuffled)
 	{
