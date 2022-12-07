@@ -55,7 +55,9 @@ void Ros::CommonNode::onInit(int num_sinks)
 			if(ros::service::call("in_labels", l))
 			{
 				input_labels = l.response.data;
-				ROS_INFO_STREAM("got response for labels: "<< input_labels.size() << " elements.");
+				if (input_labels.size()==0)
+					ROS_ERROR_STREAM("Got labels with size 0! If try to unshuffle data, this will likely fail!");
+				ROS_DEBUG_STREAM("got response for labels: "<< input_labels.size() << " elements.");
 				input.set(input_labels);
 				break;
 			}
@@ -84,7 +86,7 @@ void Ros::Reshuffler::set(std::vector<std::string> labels)
 {
 	if (desired_label_order.size() == 0)
 	{
-		ROS_ERROR_STREAM("Label order not set! Data may not make sense!!!!");	
+		ROS_WARN_STREAM("Label order not set. Data may not be aligned properly and results will be incorrect.");	
 	}
 	else
 	{
@@ -101,6 +103,8 @@ Ros::CommonNode::~CommonNode()
 }
 bool Ros::CommonNode::outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res )
 {
+	if (output_labels.size() == 0)
+		ROS_ERROR_STREAM("output_labels variable not set!!!! Your client will not be able to know what is what so this will possibly crash.");
 	res.data = output_labels;
 	published_labels_at_least_once = true;
 	ROS_INFO_STREAM("CALLED LABELS SRV");
