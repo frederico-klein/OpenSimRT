@@ -14,6 +14,7 @@
 #include <Common/TimeSeriesTable.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
+#include <memory>
 
 //constructor
 Ros::CommonNode::CommonNode(bool Debug)
@@ -54,15 +55,7 @@ void Ros::CommonNode::onInit(int num_sinks)
 			if(ros::service::call("in_labels", l))
 			{
 				input_labels = l.response.data;
-				if (desired_label_order.size() == 0)
-				{
-					ROS_ERROR_STREAM("Label order not set! Data may not make sense!!!!");	
-				}
-				else
-				{
-					deshuffle_input = find_matches(desired_label_order,input_labels);
-					ROS_INFO_STREAM("Label order set. Make sure you are not directly accessing elements, but using something like 'raw_inpu[deshuffle_input[i]]'");
-				}
+				input.set(input_labels);
 				break;
 			}
 			ros::spinOnce();
@@ -84,6 +77,19 @@ void Ros::CommonNode::onInit(int num_sinks)
 	write_sto = nh.advertiseService("write_sto", &CommonNode::writeSto, this);
 
 
+}
+
+void Ros::Reshuffler::set(std::vector<std::string> labels)
+{
+	if (desired_label_order.size() == 0)
+	{
+		ROS_ERROR_STREAM("Label order not set! Data may not make sense!!!!");	
+	}
+	else
+	{
+		deshuffle_xput = find_matches(desired_label_order,labels);
+		ROS_INFO_STREAM("Label order set. Make sure you are not directly accessing elements, but using something like 'raw_input[deshuffle_xput[i]]'");
+	}
 }
 
 //destructor

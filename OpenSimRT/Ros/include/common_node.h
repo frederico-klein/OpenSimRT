@@ -21,6 +21,15 @@ namespace Ros
 {
 	using NamedTable = std::pair<OpenSim::TimeSeriesTable*, std::string >; 
 	using NamedTables = std::vector<NamedTable>;
+	class Reshuffler
+	{
+		public:
+			std::vector<int> deshuffle_xput;
+			std::vector<std::string> desired_label_order;
+//Reshuffler();
+//~Reshuffler();
+			void set(std::vector<std::string> labels);
+	};
 
 	class CommonNode
 	{
@@ -59,8 +68,7 @@ namespace Ros
 			void saveStos();
 			void saveCsvs();
 			ros::ServiceServer write_csv, write_sto;
-			std::vector<int> deshuffle_input;
-			std::vector<std::string> desired_label_order;
+			Reshuffler input, output;
 		protected:
 			ros::ServiceServer outLabelsSrv;
 			bool outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res );
