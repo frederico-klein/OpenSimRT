@@ -86,6 +86,7 @@ void Ros::CommonNode::onInit(int num_sinks)
 	
 	startRecordingSrv 	= nh.advertiseService("start_recording", 	&CommonNode::startRecording, this);
 	stopRecordingSrv 	= nh.advertiseService("stop_recorging", 	&CommonNode::stopRecording, this);
+	clearLoggersSrv 	= nh.advertiseService("clear_loggers", 		&CommonNode::clearLoggers, this);
 
 
 }
@@ -143,6 +144,12 @@ bool Ros::CommonNode::stopRecording(std_srvs::Empty::Request &req, std_srvs::Emp
 	return true;
 }
 
+bool Ros::CommonNode::clearLoggers(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+{
+	ROS_INFO_STREAM("clearLoggers service called.");
+	clearLoggers();
+	return true;
+}
 
 bool Ros::CommonNode::writeCsv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
@@ -155,6 +162,15 @@ bool Ros::CommonNode::writeSto(std_srvs::Empty::Request &req, std_srvs::Empty::R
 	ROS_INFO_STREAM("Write Sto service called.");
 	saveStos();
 	return true;
+}
+void Ros::CommonNode::clearLoggers()
+{
+	for(NamedTable named_table:loggers)
+	{
+		auto these_column_labels = named_table.first->getColumnLabels();
+		named_table.first = new OpenSim::TimeSeriesTable;
+		named_table.first->setColumnLabels(these_column_labels);
+	}
 }
 void Ros::CommonNode::saveStos()
 {

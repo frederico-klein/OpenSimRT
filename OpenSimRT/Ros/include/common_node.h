@@ -70,15 +70,17 @@ namespace Ros
 			}
 			void saveStos();
 			void saveCsvs();
+			void clearLoggers();
 			ros::ServiceServer write_csv, write_sto;
 			Reshuffler input, output;
 		protected:
-			ros::ServiceServer outLabelsSrv, startRecordingSrv, stopRecordingSrv;
+			ros::ServiceServer outLabelsSrv, startRecordingSrv, stopRecordingSrv, clearLoggersSrv;
 			bool outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res );
 			bool writeCsv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool writeSto(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool startRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+			bool clearLoggers(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool published_labels_at_least_once=false;
 			void initializeLoggers(std::string logger_name, OpenSim::TimeSeriesTable *logger);
 	};
