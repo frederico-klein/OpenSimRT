@@ -78,6 +78,9 @@ void Ros::CommonNode::onInit(int num_sinks)
 	}
 	write_csv = nh.advertiseService("write_csv", &CommonNode::writeCsv, this);
 	write_sto = nh.advertiseService("write_sto", &CommonNode::writeSto, this);
+	
+	startRecordingSrv 	= nh.advertiseService("start_recording", 	&CommonNode::startRecording, this);
+	stopRecordingSrv 	= nh.advertiseService("stop_recorging", 	&CommonNode::stopRecording, this);
 
 
 }
@@ -122,6 +125,20 @@ void Ros::CommonNode::initializeLoggers(std::string logger_name, OpenSim::TimeSe
 	loggers.push_back(this_named_table);
 
 }
+bool Ros::CommonNode::startRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+{
+	ROS_INFO_STREAM("startRecording service called.");
+	recording= true;
+	return true;
+}
+bool Ros::CommonNode::stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+{
+	ROS_INFO_STREAM("stopRecording service called.");
+	recording_count++;
+	return true;
+}
+
+
 bool Ros::CommonNode::writeCsv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 	ROS_INFO_STREAM("Write Csv service called.");
@@ -138,7 +155,7 @@ void Ros::CommonNode::saveStos()
 {
 	for(NamedTable named_table:loggers)
 	{
-		auto loggerfilename = data_save_dir()+named_table.second+".sto";
+		auto loggerfilename = data_save_dir()+named_table.second+std::to_string(recording_count)+".sto";
 		ROS_INFO_STREAM("trying to save: " << loggerfilename);
 		OpenSim::STOFileAdapter::write(*named_table.first, loggerfilename);
 	}
@@ -147,7 +164,7 @@ void Ros::CommonNode::saveCsvs()
 {
 	for(NamedTable named_table:loggers)
 	{
-		auto loggerfilename = data_save_dir()+named_table.second+".csv";
+		auto loggerfilename = data_save_dir()+named_table.second+std::to_string(recording_count)+".csv";
 		ROS_INFO_STREAM("trying to save: " << loggerfilename);
 		OpenSim::CSVFileAdapter::write(*named_table.first, loggerfilename);
 	}

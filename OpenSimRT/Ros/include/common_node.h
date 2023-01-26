@@ -48,6 +48,8 @@ namespace Ros
 			ros::Publisher pub_filtered; //output, but filtered
 			bool publish_filtered = false;
 			NamedTables loggers;
+			bool recording = false;
+			uint32_t recording_count = 0;
 			std::string data_save_dir()
 			{
 				std::string data_save_dir_str; 
@@ -70,10 +72,12 @@ namespace Ros
 			ros::ServiceServer write_csv, write_sto;
 			Reshuffler input, output;
 		protected:
-			ros::ServiceServer outLabelsSrv;
+			ros::ServiceServer outLabelsSrv, startRecordingSrv, stopRecordingSrv;
 			bool outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res );
 			bool writeCsv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool writeSto(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+			bool startRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+			bool stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool published_labels_at_least_once=false;
 			void initializeLoggers(std::string logger_name, OpenSim::TimeSeriesTable *logger);
 	};
