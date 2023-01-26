@@ -47,10 +47,14 @@ void Ros::CommonNode::onInit(int num_sinks)
 	ros::Rate r(1);
 	//output_labels = qTable.getColumnLabels();
 	opensimrt_msgs::LabelsSrv l;
+	//so much complexity to save a little bit of bandwidth... anyway, this needs to me moved to reshuffler. Also publishing and subscribing nodes need to be setup from resshuffler inputs. Dual_sinks need to be then simplified to account for this. 
+	nh.getParam("input_labels",input_labels);
+	if (input_labels.size()>0)
+		input_size = input_labels.size();
 	//while(!ros::service::call("in_labels", l))
 	if (num_sinks > 0)
 	{
-		while(ros::ok())
+		while(ros::ok() && input_labels.size()==0)
 		{
 			if(ros::service::call("in_labels", l))
 			{
@@ -59,6 +63,7 @@ void Ros::CommonNode::onInit(int num_sinks)
 					ROS_ERROR_STREAM("Got labels with size 0! If try to unshuffle data, this will likely fail!");
 				ROS_DEBUG_STREAM("got response for labels: "<< input_labels.size() << " elements.");
 				input.set(input_labels);
+				input_size = input_labels.size();
 				break;
 			}
 			ros::spinOnce();

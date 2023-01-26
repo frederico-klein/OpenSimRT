@@ -37,6 +37,7 @@ namespace Ros
 			CommonNode(bool Debug=true);
 			~CommonNode();
 			std::vector<std::string> input_labels;
+			size_t input_size;
 			std::vector<std::string> output_labels;
 
 			ros::NodeHandle nh{"~"};
