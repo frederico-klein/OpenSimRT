@@ -5,6 +5,7 @@
 #include "opensimrt_msgs/CommonTimed.h"
 #include "opensimrt_msgs/PosVelAccTimed.h"
 #include "opensimrt_msgs/LabelsSrv.h"
+#include "opensimrt_msgs/SetFileNameSrv.h"
 #include "std_srvs/Empty.h"
 #include "ros/service_client.h"
 #include "ros/service_server.h"
@@ -55,7 +56,16 @@ namespace Ros
 			{
 				std::string data_save_dir_str; 
 				nh.param<std::string>("data_save_dir",data_save_dir_str,"/tmp/");
+				ROS_INFO_STREAM("current saving prefix: ");
 				return data_save_dir_str;
+
+			};
+			std::string data_save_filename()
+			{
+				std::string data_save_filename_str; 
+				nh.param<std::string>("data_save_file",data_save_filename_str,"file");
+				ROS_INFO_STREAM("current saving file: ");
+				return data_save_filename_str;
 
 			};
 			bool at_least_one_logger_initialized = false;
@@ -74,13 +84,14 @@ namespace Ros
 			ros::ServiceServer write_csv, write_sto;
 			Reshuffler input, output;
 		protected:
-			ros::ServiceServer outLabelsSrv, startRecordingSrv, stopRecordingSrv, clearLoggersSrv;
+			ros::ServiceServer outLabelsSrv, startRecordingSrv, stopRecordingSrv, clearLoggersSrv, setNamePathSrv;
 			bool outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res );
 			bool writeCsv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool writeSto(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool startRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool clearLoggers(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+			bool setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, opensimrt_msgs::SetFileNameSrv::Response &res);
 			bool published_labels_at_least_once=false;
 			void initializeLoggers(std::string logger_name, OpenSim::TimeSeriesTable *logger);
 	};

@@ -1,16 +1,11 @@
 #include "Ros/include/common_node.h"
+#include "Ros/include/resolv_dir.h"
+#include "opensimrt_msgs/SetFileNameSrv.h"
 #include "ros/init.h"
-#include "ros/node_handle.h"
-#include "ros/publisher.h"
 #include "ros/rate.h"
 #include "ros/ros.h"
-#include "opensimrt_msgs/CommonTimed.h"
-#include "opensimrt_msgs/PosVelAccTimed.h"
-#include "opensimrt_msgs/LabelsSrv.h"
-#include "std_srvs/Empty.h"
 #include "ros/service_client.h"
 #include "ros/service_server.h"
-#include "ros/subscriber.h"
 #include <Common/TimeSeriesTable.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
@@ -85,9 +80,10 @@ void Ros::CommonNode::onInit(int num_sinks)
 	write_sto = nh.advertiseService("write_sto", &CommonNode::writeSto, this);
 	
 	startRecordingSrv 	= nh.advertiseService("start_recording", 	&CommonNode::startRecording, this);
-	stopRecordingSrv 	= nh.advertiseService("stop_recorging", 	&CommonNode::stopRecording, this);
+	stopRecordingSrv 	= nh.advertiseService("stop_recording", 	&CommonNode::stopRecording, this);
 	clearLoggersSrv 	= nh.advertiseService("clear_loggers", 		&CommonNode::clearLoggers, this);
 
+	setNamePathSrv 		= nh.advertiseService("set_name_and_path", 	&CommonNode::setNamePath, this);
 
 }
 
@@ -167,16 +163,23 @@ void Ros::CommonNode::clearLoggers()
 {
 	for(NamedTable named_table:loggers)
 	{
-		auto these_column_labels = named_table.first->getColumnLabels();
-		named_table.first = new OpenSim::TimeSeriesTable;
-		named_table.first->setColumnLabels(these_column_labels);
+		//auto these_column_labels = named_table.first->getColumnLabels();
+		ROS_WARN_STREAM("num_rows of table:" << named_table.first->getNumRows());
+		//delete(named_table.first->updDependentColumn);
+		//
+		while(named_table.first->getNumRows() >0)
+			named_table.first->removeRowAtIndex(0);
+		//named_table.first = new OpenSim::TimeSeriesTable;
+		//named_table.first->setColumnLabels(these_column_labels);
+		ROS_WARN_STREAM("num_rows of table after deletion:" << named_table.first->getNumRows());
 	}
 }
 void Ros::CommonNode::saveStos()
 {
 	for(NamedTable named_table:loggers)
 	{
-		auto loggerfilename = data_save_dir()+named_table.second+std::to_string(recording_count)+".sto";
+		auto loggerfilename = data_save_filename()+std::to_string(recording_count)+named_table.second+".sto";
+		loggerfilename = resolve_file(data_save_dir(),loggerfilename);
 		ROS_INFO_STREAM("trying to save: " << loggerfilename);
 		OpenSim::STOFileAdapter::write(*named_table.first, loggerfilename);
 	}
@@ -185,10 +188,24 @@ void Ros::CommonNode::saveCsvs()
 {
 	for(NamedTable named_table:loggers)
 	{
-		auto loggerfilename = data_save_dir()+named_table.second+std::to_string(recording_count)+".csv";
+		auto loggerfilename = data_save_filename()+std::to_string(recording_count)+named_table.second+".csv";
+		loggerfilename = resolve_file(data_save_dir(),loggerfilename);
 		ROS_INFO_STREAM("trying to save: " << loggerfilename);
 		OpenSim::CSVFileAdapter::write(*named_table.first, loggerfilename);
 	}
 
 }
 
+bool Ros::CommonNode::setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, opensimrt_msgs::SetFileNameSrv::Response &res)
+{
+	ROS_INFO_STREAM("name " << req.name << " path:"<< req.path);
+	
+	std::string dirname = resolve_dir(req.path);
+	std::string filename = req.name;
+	ROS_INFO_STREAM("dirname: " << dirname);
+	nh.setParam("data_save_dir", dirname);
+	nh.setParam("data_save_file", filename);
+	return true;
+
+
+}
