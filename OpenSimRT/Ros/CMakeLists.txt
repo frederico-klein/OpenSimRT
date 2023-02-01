@@ -1,7 +1,7 @@
 set(DEPENDENCY_LIBRARIES ${OpenSim_LIBRARIES} RealTime Common)
 
 # global files
-file(GLOB includes include/*.h)
+file(GLOB includes include/common_node.h include/saver_node.h) 
 file(GLOB sources src/*.cpp)
 # dependencies
 include_directories(include/)

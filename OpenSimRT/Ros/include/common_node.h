@@ -1,27 +1,15 @@
 #ifndef ROS_HEADER_FBK_31052022
 #define ROS_HEADER_FBK_31052022
-#include "ros/node_handle.h"
 #include "ros/publisher.h"
 #include "opensimrt_msgs/CommonTimed.h"
 #include "opensimrt_msgs/PosVelAccTimed.h"
-#include "opensimrt_msgs/LabelsSrv.h"
-#include "opensimrt_msgs/SetFileNameSrv.h"
-#include "std_srvs/Empty.h"
-#include "ros/service_client.h"
-#include "ros/service_server.h"
 #include "ros/subscriber.h"
 #include <Common/TimeSeriesTable.h>
-
 #include <message_filters/subscriber.h>
-
-
-//idk whats going on
-#include "Settings.h"
+#include <Ros/include/saver_node.h>
 
 namespace Ros
 {
-	using NamedTable = std::pair<OpenSim::TimeSeriesTable*, std::string >; 
-	using NamedTables = std::vector<NamedTable>;
 	class Reshuffler
 	{
 		public:
@@ -32,7 +20,7 @@ namespace Ros
 			void set(std::vector<std::string> labels);
 	};
 
-	class CommonNode
+	class CommonNode:public SaverNode
 	{
 		public:
 			CommonNode(bool Debug=true);
@@ -40,6 +28,7 @@ namespace Ros
 			std::vector<std::string> input_labels;
 			size_t input_size;
 			std::vector<std::string> output_labels;
+			bool published_labels_at_least_once = false;
 
 			ros::NodeHandle nh{"~"};
 			//ros::Subscriber sub; //input
@@ -49,26 +38,6 @@ namespace Ros
 			ros::Publisher pub; //output
 			ros::Publisher pub_filtered; //output, but filtered
 			bool publish_filtered = false;
-			NamedTables loggers;
-			bool recording = false;
-			uint32_t recording_count = 0;
-			std::string data_save_dir()
-			{
-				std::string data_save_dir_str; 
-				nh.param<std::string>("data_save_dir",data_save_dir_str,"/tmp/");
-				ROS_INFO_STREAM("current saving prefix: ");
-				return data_save_dir_str;
-
-			};
-			std::string data_save_filename()
-			{
-				std::string data_save_filename_str; 
-				nh.param<std::string>("data_save_file",data_save_filename_str,"file");
-				ROS_INFO_STREAM("current saving file: ");
-				return data_save_filename_str;
-
-			};
-			bool at_least_one_logger_initialized = false;
 			void onInit(int num_sinks = 1);
 			virtual void callback(const opensimrt_msgs::CommonTimedConstPtr& message) 
 			{
@@ -78,22 +47,10 @@ namespace Ros
 			{
 				ROS_ERROR_STREAM("callback_filtered not implemented!");
 			}
-			void saveStos();
-			void saveCsvs();
-			void clearLoggers();
-			ros::ServiceServer write_csv, write_sto;
 			Reshuffler input, output;
 		protected:
-			ros::ServiceServer outLabelsSrv, startRecordingSrv, stopRecordingSrv, clearLoggersSrv, setNamePathSrv;
+			ros::ServiceServer outLabelsSrv;
 			bool outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res );
-			bool writeCsv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-			bool writeSto(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-			bool startRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-			bool stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-			bool clearLoggers(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-			bool setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, opensimrt_msgs::SetFileNameSrv::Response &res);
-			bool published_labels_at_least_once=false;
-			void initializeLoggers(std::string logger_name, OpenSim::TimeSeriesTable *logger);
 	};
 	template <typename T> std::vector<int> find_matches(std::vector<T> desired, std::vector<T> shuffled)
 	{
