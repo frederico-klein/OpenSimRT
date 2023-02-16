@@ -24,11 +24,12 @@ namespace Ros
 			NamedTables loggers;
 			bool recording = false;
 			uint32_t recording_count = 0;
+			std::string resolved_file_prefix = "";
 			std::string data_save_dir()
 			{
 				std::string data_save_dir_str; 
 				nh.param<std::string>("data_save_dir",data_save_dir_str,"/tmp/");
-				ROS_INFO_STREAM("current saving prefix: ");
+				ROS_INFO_STREAM("current saving prefix: " << data_save_dir_str);
 				return data_save_dir_str;
 
 			};
@@ -36,7 +37,7 @@ namespace Ros
 			{
 				std::string data_save_filename_str; 
 				nh.param<std::string>("data_save_file",data_save_filename_str,"file");
-				ROS_INFO_STREAM("current saving file: ");
+				ROS_INFO_STREAM("current saving file: " << data_save_filename_str);
 				return data_save_filename_str;
 
 			};
