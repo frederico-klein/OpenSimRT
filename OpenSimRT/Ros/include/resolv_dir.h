@@ -12,6 +12,7 @@
 #include <bits/stdc++.h>
 #include <stdlib.h>
 #include <boost/filesystem.hpp>
+#include <chrono>
 
 const char* home = getenv("HOME");
 
@@ -19,6 +20,18 @@ inline bool exists_test (const std::string& name) {
 	struct stat buffer;   
 	return (stat (name.c_str(), &buffer) == 0); 
 }
+
+using time_point = std::chrono::system_clock::time_point;
+std::string serializeTimePoint( const time_point& time, const std::string& format)
+{
+    std::time_t tt = std::chrono::system_clock::to_time_t(time);
+    std::tm tm = *std::gmtime(&tt); //GMT (UTC)
+    //std::tm tm = *std::localtime(&tt); //Locale time-zone, usually UTC by default.
+    std::stringstream ss;
+    ss << std::put_time( &tm, format.c_str() );
+    return ss.str();
+}
+
 
 std::string resolve_dir(std::string directory_name)
 {
@@ -47,7 +60,17 @@ std::string resolve_dir(std::string directory_name)
 		return directory_name;
 
 }
-std::string resolve_file(std::string directory_name, std::string filename_prefix)
+std::string resolve_file_time(std::string directory_name, std::string filename_prefix)
+{
+
+    time_point input = std::chrono::system_clock::now();
+	std::string time_str = serializeTimePoint(input, "%Y-%m-%d-%H-%M-%S");
+	std::string complete_file_name = directory_name + "/"+ time_str + filename_prefix;
+	return complete_file_name;
+
+}
+
+std::string resolve_file_old(std::string directory_name, std::string filename_prefix)
 {
 	int counter = 0;
 	std::string complete_file_name = "";
@@ -66,7 +89,7 @@ std::string resolve_file(std::string directory_name, std::string filename_prefix
 			break;
 		}
 	}
-	std::cout << "saved successfully" << std::endl;
+	//std::cout << "saved successfully" << std::endl;
 	return complete_file_name;
 
 

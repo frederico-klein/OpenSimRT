@@ -51,6 +51,7 @@ bool Ros::SaverNode::startRecording(std_srvs::Empty::Request &req, std_srvs::Emp
 {
 	ROS_INFO_STREAM("startRecording service called.");
 	recording= true;
+	resolved_file_prefix = resolve_file_time(data_save_dir(),""); //sto data saved at the same time will have the same stamp
 	return true;
 }
 bool Ros::SaverNode::stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
@@ -97,10 +98,12 @@ void Ros::SaverNode::clearLoggers()
 }
 void Ros::SaverNode::saveStos()
 {
+
 	for(NamedTable named_table:loggers)
 	{
 		auto loggerfilename = data_save_filename()+std::to_string(recording_count)+named_table.second+".sto";
-		loggerfilename = resolve_file(data_save_dir(),loggerfilename);
+		//loggerfilename = resolve_file(data_save_dir(),loggerfilename);
+		loggerfilename = resolved_file_prefix+ loggerfilename;
 		ROS_INFO_STREAM("trying to save: " << loggerfilename);
 		OpenSim::STOFileAdapter::write(*named_table.first, loggerfilename);
 	}
@@ -110,7 +113,8 @@ void Ros::SaverNode::saveCsvs()
 	for(NamedTable named_table:loggers)
 	{
 		auto loggerfilename = data_save_filename()+std::to_string(recording_count)+named_table.second+".csv";
-		loggerfilename = resolve_file(data_save_dir(),loggerfilename);
+		//loggerfilename = resolve_file(data_save_dir(),loggerfilename);
+		loggerfilename = resolved_file_prefix+ loggerfilename;
 		ROS_INFO_STREAM("trying to save: " << loggerfilename);
 		OpenSim::CSVFileAdapter::write(*named_table.first, loggerfilename);
 	}
