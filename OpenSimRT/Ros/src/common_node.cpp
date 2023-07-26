@@ -1,5 +1,6 @@
 #include "Ros/include/common_node.h"
 #include "ros/init.h"
+#include "ros/node_handle.h"
 #include "ros/rate.h"
 #include "ros/ros.h"
 #include <memory>
@@ -11,6 +12,36 @@ Ros::CommonNode::CommonNode(bool Debug)
 		ros::console::notifyLoggerLevelsChanged();
 	}
 } 
+
+void Ros::Reshuffler::get_labels(ros::NodeHandle nh)
+{
+	ros::Rate r(1);
+	//output_labels = qTable.getColumnLabels();
+	opensimrt_msgs::LabelsSrv l;
+	//so much complexity to save a little bit of bandwidth... anyway, this needs to me moved to reshuffler. Also publishing and subscribing nodes need to be setup from resshuffler inputs. Dual_sinks need to be then simplified to account for this. 
+	nh.getParam("input_labels",labels);
+	if (labels.size()>0)
+		xput_size = labels.size();
+	//while(!ros::service::call("in_labels", l))
+	while(ros::ok() && labels.size()==0)
+	{
+		if(ros::service::call("in_labels", l))
+		{
+			labels = l.response.data;
+			if (labels.size()==0)
+				ROS_ERROR_STREAM("Got labels with size 0! If try to unshuffle data, this will likely fail!");
+			ROS_DEBUG_STREAM("got response for labels: "<< labels.size() << " elements.");
+			set(labels);
+			xput_size = labels.size();
+			break;
+		}
+		ros::spinOnce();
+		ROS_INFO_STREAM("Waiting to read input labels."); 
+		r.sleep();
+	}
+
+}
+
 void Ros::CommonNode::onInit(int num_sinks)
 {
 	pub = nh.advertise<opensimrt_msgs::CommonTimed>("output", 1000);
@@ -32,32 +63,9 @@ void Ros::CommonNode::onInit(int num_sinks)
 	{
 		ROS_INFO_STREAM("not single_sink, callback isnt registered yet!");
 	}
-	ros::Rate r(1);
-	//output_labels = qTable.getColumnLabels();
-	opensimrt_msgs::LabelsSrv l;
-	//so much complexity to save a little bit of bandwidth... anyway, this needs to me moved to reshuffler. Also publishing and subscribing nodes need to be setup from resshuffler inputs. Dual_sinks need to be then simplified to account for this. 
-	nh.getParam("input_labels",input_labels);
-	if (input_labels.size()>0)
-		input_size = input_labels.size();
-	//while(!ros::service::call("in_labels", l))
 	if (num_sinks > 0)
 	{
-		while(ros::ok() && input_labels.size()==0)
-		{
-			if(ros::service::call("in_labels", l))
-			{
-				input_labels = l.response.data;
-				if (input_labels.size()==0)
-					ROS_ERROR_STREAM("Got labels with size 0! If try to unshuffle data, this will likely fail!");
-				ROS_DEBUG_STREAM("got response for labels: "<< input_labels.size() << " elements.");
-				input.set(input_labels);
-				input_size = input_labels.size();
-				break;
-			}
-			ros::spinOnce();
-			ROS_INFO_STREAM("Waiting to read input labels."); 
-			r.sleep();
-		}
+		input.get_labels(nh);
 	}
 	else if (num_sinks==0)
 	{
@@ -94,9 +102,9 @@ Ros::CommonNode::~CommonNode()
 }
 bool Ros::CommonNode::outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res )
 {
-	if (output_labels.size() == 0)
+	if (output.labels.size() == 0)
 		ROS_ERROR_STREAM("output_labels variable not set!!!! Your client will not be able to know what is what so this will possibly crash.");
-	res.data = output_labels;
+	res.data = output.labels;
 	published_labels_at_least_once = true;
 	ROS_INFO_STREAM("CALLED LABELS SRV");
 	return true;

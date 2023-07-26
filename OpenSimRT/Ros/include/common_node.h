@@ -1,5 +1,6 @@
 #ifndef ROS_HEADER_FBK_31052022
 #define ROS_HEADER_FBK_31052022
+#include "ros/node_handle.h"
 #include "ros/publisher.h"
 #include "opensimrt_msgs/CommonTimed.h"
 #include "opensimrt_msgs/PosVelAccTimed.h"
@@ -15,9 +16,12 @@ namespace Ros
 		public:
 			std::vector<int> deshuffle_xput;
 			std::vector<std::string> desired_label_order;
+			std::vector<std::string> labels;
+			size_t xput_size;
 //Reshuffler();
 //~Reshuffler();
 			void set(std::vector<std::string> labels);
+			void get_labels(ros::NodeHandle nh);
 	};
 
 	class CommonNode:public SaverNode
@@ -25,9 +29,6 @@ namespace Ros
 		public:
 			CommonNode(bool Debug=true);
 			~CommonNode();
-			std::vector<std::string> input_labels;
-			size_t input_size;
-			std::vector<std::string> output_labels;
 			bool published_labels_at_least_once = false;
 
 			ros::NodeHandle nh{"~"};
@@ -80,7 +81,6 @@ namespace Ros
 		}
 		return el;
 	}	
-
 
 }
 
