@@ -51,7 +51,6 @@ bool Ros::SaverNode::startRecording(std_srvs::Empty::Request &req, std_srvs::Emp
 {
 	ROS_INFO_STREAM("startRecording service called.");
 	recording= true;
-	resolved_file_prefix = resolve_file_time(data_save_dir(),""); //sto data saved at the same time will have the same stamp
 	return true;
 }
 bool Ros::SaverNode::stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
@@ -130,6 +129,7 @@ bool Ros::SaverNode::setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, o
 	ROS_INFO_STREAM("dirname: " << dirname);
 	nh.setParam("data_save_dir", dirname);
 	nh.setParam("data_save_file", filename);
+	resolved_file_prefix = resolve_file_time(data_save_dir(),""); //sto data saved at the same time will have the same stamp
 	return true;
 
 
