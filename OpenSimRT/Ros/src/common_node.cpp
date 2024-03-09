@@ -13,13 +13,13 @@ Ros::CommonNode::CommonNode(bool Debug)
 	}
 } 
 
-void Ros::Reshuffler::get_labels(ros::NodeHandle nh)
+void Ros::Reshuffler::get_labels(ros::NodeHandle n)
 {
 	ros::Rate r(1);
 	//output_labels = qTable.getColumnLabels();
 	opensimrt_msgs::LabelsSrv l;
 	//so much complexity to save a little bit of bandwidth... anyway, this needs to me moved to reshuffler. Also publishing and subscribing nodes need to be setup from resshuffler inputs. Dual_sinks need to be then simplified to account for this. 
-	nh.getParam("input_labels",labels);
+	n.getParam("input_labels",labels);
 	if (labels.size()>0)
 		xput_size = labels.size();
 	//while(!ros::service::call("in_labels", l))
@@ -44,18 +44,18 @@ void Ros::Reshuffler::get_labels(ros::NodeHandle nh)
 
 void Ros::CommonNode::onInit(int num_sinks)
 {
-	pub = nh.advertise<opensimrt_msgs::CommonTimed>("output", 1000);
+	pub = n.advertise<opensimrt_msgs::CommonTimed>("output", 1000);
 	if (publish_filtered)
-		pub_filtered = nh.advertise<opensimrt_msgs::PosVelAccTimed>("output_filtered", 1000);
+		pub_filtered = n.advertise<opensimrt_msgs::PosVelAccTimed>("output_filtered", 1000);
 	outLabelsSrv = nh.advertiseService("out_labels", &CommonNode::outLabels, this);
 
 	if (num_sinks == 1)
 	{
 		ROS_INFO_STREAM("registering ik callback");
 		//register the callback
-		sub.subscribe(nh, "input",10);
+		sub.subscribe(n, "input",10);
 		sub.registerCallback(&CommonNode::callback,this);
-		sub_filtered.subscribe(nh, "input_filtered",10);
+		sub_filtered.subscribe(n, "input_filtered",10);
 		sub_filtered.registerCallback(&CommonNode::callback_filtered,this);
 		//sub = nh.subscribe("input",5, &CommonNode::callback, this);
 	}
@@ -65,7 +65,7 @@ void Ros::CommonNode::onInit(int num_sinks)
 	}
 	if (num_sinks > 0)
 	{
-		input.get_labels(nh);
+		input.get_labels(n);
 	}
 	else if (num_sinks==0)
 	{
