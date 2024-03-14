@@ -38,7 +38,7 @@ namespace OpenSimRT {
  * body through some point.
  */
 class RealTime_API ExternalWrench : public OpenSim::Force {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ExternalWrench, OpenSim::Force);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExternalWrench, OpenSim::Force) //Wpedantic was complaining about this.
 
  public: /* public data structures */
     struct RealTime_API Parameters {
