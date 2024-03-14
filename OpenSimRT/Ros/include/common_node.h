@@ -31,7 +31,9 @@ namespace Ros
 			~CommonNode();
 			bool published_labels_at_least_once = false;
 
+			ros::NodeHandle n;
 			ros::NodeHandle nh{"~"};
+			
 			//ros::Subscriber sub; //input
 			message_filters::Subscriber<opensimrt_msgs::CommonTimed> sub;
 			message_filters::Subscriber<opensimrt_msgs::PosVelAccTimed> sub_filtered;
