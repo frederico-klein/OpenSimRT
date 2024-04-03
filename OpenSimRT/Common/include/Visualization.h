@@ -58,6 +58,7 @@ namespace OpenSimRT {
 class Common_API FPSDecorator : public SimTK::DecorationGenerator {
  public:
     FPSDecorator();
+    double actual_delay = -1.0;
     void generateDecorations(
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) override;
@@ -113,10 +114,10 @@ class Common_API BasicModelVisualizer {
                                        const std::string& toBodyName,
                                        SimTK::Vec3& toBodyPoint);
 
+    SimTK::ReferencePtr<FPSDecorator> fps;
  private:
     OpenSim::Model model;
     SimTK::State state;
-    SimTK::ReferencePtr<FPSDecorator> fps;
     SimTK::ReferencePtr<SimTK::Visualizer> visualizer;
     SimTK::ReferencePtr<SimTK::Visualizer::InputSilo> silo;
     bool shouldTerminate;
