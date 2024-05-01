@@ -23,6 +23,7 @@ void Ros::Reshuffler::get_labels(ros::NodeHandle n)
 	if (labels.size()>0)
 		xput_size = labels.size();
 	//while(!ros::service::call("in_labels", l))
+	auto srv_name = ros::names::resolve("in_labels");
 	while(ros::ok() && labels.size()==0)
 	{
 		if(ros::service::call("in_labels", l))
@@ -36,7 +37,7 @@ void Ros::Reshuffler::get_labels(ros::NodeHandle n)
 			break;
 		}
 		ros::spinOnce();
-		ROS_INFO_STREAM("Waiting to read input labels."); 
+		ROS_INFO_STREAM("Waiting to read input labels from: " << srv_name); 
 		r.sleep();
 	}
 
