@@ -23,6 +23,9 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <Simulation/Model/PhysicalOffsetFrame.h>
 #include <Simulation/SimbodyEngine/Body.h>
+#include <sstream>
+
+
 
 using namespace std;
 using namespace chrono;
@@ -51,8 +54,11 @@ milliseconds FPSDecorator::calculateLoopDelay() {
 	if (duration > milliseconds(1000)) {
 		previousTime = currentTime;
 		if (actual_delay >0)
-			text = "FPS: " + to_string(counter) +
-				" | RealDelay: " + toString(actual_delay, 2) + "ms";
+		{	
+			std::ostringstream my_text;
+			my_text	<< "FPS: "<< std::fixed << std::setprecision(0) << counter << " | RealDelay: " << std::fixed << std::setprecision(2) << actual_delay   <<"ms";
+			text = my_text.str();
+		}
 		else
 			text = "FPS: " + to_string(counter) +
 				" | Delay: " + toString(1000.0 / counter, 2) + "ms";
