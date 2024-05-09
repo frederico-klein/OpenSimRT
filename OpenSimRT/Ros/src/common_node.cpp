@@ -71,7 +71,8 @@ void Ros::CommonNode::onInit(int num_sinks)
 	else if (num_sinks==0)
 	{
 		ROS_INFO_STREAM("Source node registered (num_sinks = 0)");	    
-
+		if (output.labels.size()==0)
+			ROS_WARN_STREAM("I already registered the service for outputting labels, but the labels are not yet set. The downstream nodes will get empty label data!");
 	}
 	else
 	{
