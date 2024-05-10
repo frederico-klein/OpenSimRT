@@ -138,7 +138,7 @@ LowPassSmoothFilter::filter(const LowPassSmoothFilter::Input& input) {
     if (initializationCounter > 0) {
         initializationCounter--;
         output.isValid = false;
-	cout << "Not enough samples to run filter!" << initializationCounter << endl;
+	//cout << "Not enough samples to run filter!" << initializationCounter <<"\r" << endl;
         return output;
     }
 
