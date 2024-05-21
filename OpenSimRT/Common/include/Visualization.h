@@ -31,6 +31,7 @@
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <SimTKcommon/internal/DecorationGenerator.h>
 #include <simbody/internal/Visualizer_InputListener.h>
+#include <simbody/internal/common.h>
 
 namespace OpenSimRT {
 
@@ -79,6 +80,10 @@ class Common_API ForceDecorator : public SimTK::DecorationGenerator {
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) override;
 
+    SimTK::MobilizedBodyIndex mbdIndex{0};
+
+    void setOriginByName(const OpenSim::Model& model, std::string name);
+
  private:
     SimTK::Vec3 color;
     SimTK::Vec3 point;
@@ -114,6 +119,7 @@ class Common_API BasicModelVisualizer {
                                        const std::string& toBodyName,
                                        SimTK::Vec3& toBodyPoint);
 
+    void refreshModel();
     SimTK::ReferencePtr<FPSDecorator> fps;
  private:
     OpenSim::Model model;
