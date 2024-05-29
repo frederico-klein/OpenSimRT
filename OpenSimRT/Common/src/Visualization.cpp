@@ -93,7 +93,12 @@ void ForceDecorator::generateDecorations(const State& state,
 			.setColor(color)
 			.setLineThickness(lineThikness));
 	else
-		cerr << "MobilizedBodyIndex isnt valid" <<endl;
+	{cerr << "MobilizedBodyIndex isnt valid" <<endl;
+		geometry.push_back(
+			DecorativeLine(point, point + scaleFactor *force)
+			.setColor(color)
+			.setLineThickness(lineThikness));
+	}
 }
 void ForceDecorator::setOriginByName(const OpenSim::Model& model, std::string name)
 {
