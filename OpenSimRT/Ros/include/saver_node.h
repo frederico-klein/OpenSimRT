@@ -23,11 +23,11 @@ namespace Ros
 			virtual ~SaverNode();
 			ros::NodeHandle nh{"~"};
 			NamedTables loggers;
-			//bool recording = false;
+			bool recording = false;
 			//
 			// we need to replace every recording check with isRecording now, since we are using the threading thing now.
 			bool isRecording() const {
-				return recording_enabled.load();
+				return recording_enabled.load() && recording;
 			}
 			uint32_t recording_count = 0;
 			std::string resolved_file_prefix = "";

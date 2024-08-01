@@ -59,14 +59,14 @@ void Ros::SaverNode::initializeLoggers(std::string logger_name, OpenSim::TimeSer
 bool Ros::SaverNode::startRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 	ROS_INFO_STREAM("startRecording service called.");
-	recording_enabled = true;
+	recording = true;
 	return true;
 }
 bool Ros::SaverNode::stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 	ROS_INFO_STREAM("stopRecording service called.");
 	recording_count++;
-	recording_enabled = false;
+	recording = false;
 	return true;
 }
 
