@@ -28,7 +28,7 @@ namespace Ros
 	{
 		public:
 			CommonNode(bool Debug=true);
-			~CommonNode();
+			virtual ~CommonNode() override;
 			bool published_labels_at_least_once = false;
 
 			ros::NodeHandle n;

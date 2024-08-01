@@ -99,8 +99,11 @@ void Ros::Reshuffler::set(std::vector<std::string> labels)
 //destructor
 Ros::CommonNode::~CommonNode()
 {
-	if(!at_least_one_logger_initialized)
-		ROS_ERROR_STREAM("You forgot to initialize loggers!");
+	// we want to make sure that we clean the parameters set by this node so we can restart it with different parameters if needed and not worry if we left something behind. 
+	// This isn't default behaviour though, so we maybe should say something. 
+	ROS_INFO_STREAM("Deleting previsouly set node parameters.");
+	ros::param::del("~");
+
 }
 bool Ros::CommonNode::outLabels(opensimrt_msgs::LabelsSrv::Request & req, opensimrt_msgs::LabelsSrv::Response& res )
 {

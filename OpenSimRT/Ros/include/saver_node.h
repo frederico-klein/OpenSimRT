@@ -7,7 +7,8 @@
 #include "ros/service_client.h"
 #include "ros/service_server.h"
 #include <Common/TimeSeriesTable.h>
-
+#include <boost/thread.hpp>
+#include <atomic>
 //idk whats going on
 #include "Settings.h"
 
@@ -19,10 +20,15 @@ namespace Ros
 	{
 		public:
 			SaverNode(bool Debug=true);
-			~SaverNode();
+			virtual ~SaverNode();
 			ros::NodeHandle nh{"~"};
 			NamedTables loggers;
-			bool recording = false;
+			//bool recording = false;
+			//
+			// we need to replace every recording check with isRecording now, since we are using the threading thing now.
+			bool isRecording() const {
+				return recording_enabled.load();
+			}
 			uint32_t recording_count = 0;
 			std::string resolved_file_prefix = "";
 			std::string data_save_dir()
@@ -56,6 +62,12 @@ namespace Ros
 			bool clearLoggers(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 			bool setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, opensimrt_msgs::SetFileNameSrv::Response &res);
 			void initializeLoggers(std::string logger_name, OpenSim::TimeSeriesTable *logger);
+
+		private:
+			std::atomic<bool> recording_enabled;
+			double epoch_start;
+			boost::thread check_thread;
+			void timeChecker();
 	};
 
 

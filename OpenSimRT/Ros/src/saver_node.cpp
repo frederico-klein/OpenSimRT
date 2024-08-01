@@ -9,7 +9,7 @@
 #include <memory>
 
 //constructor
-Ros::SaverNode::SaverNode(bool Debug)
+Ros::SaverNode::SaverNode(bool Debug): recording_enabled(false), epoch_start(0)
 {
 	if( Debug && ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
 		ros::console::notifyLoggerLevelsChanged();
@@ -25,8 +25,13 @@ void Ros::SaverNode::onInit()
 	clearLoggersSrv 	= nh.advertiseService("clear_loggers", 		&SaverNode::clearLoggers, this);
 
 	setNamePathSrv 		= nh.advertiseService("set_name_and_path", 	&SaverNode::setNamePath, this);
-
+	
+	nh.getParam("epoch_start", epoch_start);
+	
+	// Starts the thread to monitor the epoch time
+	check_thread = boost::thread(&SaverNode::timeChecker, this);
 }
+
 
 
 //destructor
@@ -34,6 +39,10 @@ Ros::SaverNode::~SaverNode()
 {
 	if(!at_least_one_logger_initialized)
 		ROS_ERROR_STREAM("You forgot to initialize loggers!");
+        
+	// Ensure the thread is properly joined
+	check_thread.interrupt();
+	check_thread.join();
 }
 
 
@@ -50,14 +59,14 @@ void Ros::SaverNode::initializeLoggers(std::string logger_name, OpenSim::TimeSer
 bool Ros::SaverNode::startRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 	ROS_INFO_STREAM("startRecording service called.");
-	recording= true;
+	recording_enabled = true;
 	return true;
 }
 bool Ros::SaverNode::stopRecording(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 	ROS_INFO_STREAM("stopRecording service called.");
 	recording_count++;
-	recording=false;
+	recording_enabled = false;
 	return true;
 }
 
@@ -90,6 +99,7 @@ void Ros::SaverNode::clearLoggers()
 		//
 		while(named_table.first->getNumRows() >0)
 			named_table.first->removeRowAtIndex(0);
+
 		//named_table.first = new OpenSim::TimeSeriesTable;
 		//named_table.first->setColumnLabels(these_column_labels);
 		ROS_WARN_STREAM("num_rows of table after deletion:" << named_table.first->getNumRows());
@@ -123,7 +133,7 @@ void Ros::SaverNode::saveCsvs()
 bool Ros::SaverNode::setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, opensimrt_msgs::SetFileNameSrv::Response &res)
 {
 	ROS_INFO_STREAM("name " << req.name << " path:"<< req.path);
-	
+
 	std::string dirname = resolve_dir(req.path);
 	std::string filename = req.name;
 	ROS_INFO_STREAM("dirname: " << dirname);
@@ -133,4 +143,19 @@ bool Ros::SaverNode::setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, o
 	return true;
 
 
+}
+
+void Ros::SaverNode::timeChecker() {
+	ros::Time::init(); // Ensure ROS time is initialized
+	while (ros::ok()) {
+		ros::Time current_time = ros::Time::now();
+		if (current_time.toSec() >= epoch_start) {
+			recording_enabled.store(true);
+		} else {
+			recording_enabled.store(false);
+		}
+
+		// Sleep for a short period to avoid busy-waiting
+		boost::this_thread::sleep_for(boost::chrono::milliseconds(1));
+	}
 }
