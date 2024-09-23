@@ -125,6 +125,9 @@ void Ros::SaverNode::saveCsvs()
 		//loggerfilename = resolve_file(data_save_dir(),loggerfilename);
 		loggerfilename = resolved_file_prefix+ loggerfilename;
 		ROS_INFO_STREAM("trying to save: " << loggerfilename);
+		named_table.first->addTableMetaData("notes",notes);
+		named_table.first->addTableMetaData("description",description);
+
 		OpenSim::CSVFileAdapter::write(*named_table.first, loggerfilename);
 	}
 
@@ -139,6 +142,8 @@ bool Ros::SaverNode::setNamePath(opensimrt_msgs::SetFileNameSrv::Request &req, o
 	ROS_INFO_STREAM("dirname: " << dirname);
 	nh.setParam("data_save_dir", dirname);
 	nh.setParam("data_save_file", filename);
+	notes = req.notes;
+	description = req.description;
 	resolved_file_prefix = resolve_file_time(data_save_dir(),""); //sto data saved at the same time will have the same stamp
 	return true;
 

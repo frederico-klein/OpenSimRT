@@ -68,6 +68,7 @@ namespace Ros
 			double epoch_start;
 			boost::thread check_thread;
 			void timeChecker();
+			std::string notes, description;
 	};
 
 
