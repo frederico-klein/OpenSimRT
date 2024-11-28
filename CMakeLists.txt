@@ -16,8 +16,7 @@ catkin_package(INCLUDE_DIRS
 	OpenSimRT
 	OpenSimRT/Common/include
 	OpenSimRT/RealTime/include
-	OpenSimRT/Vicon/include
-	LIBRARIES Common Vicon RealTime Ros
+	LIBRARIES Common RealTime Ros
 	DEPENDS OpenSim
 	CATKIN_DEPENDS opensimrt_msgs roscpp
 	)
